@@ -1,0 +1,132 @@
+﻿<Window x:Class="ProFer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        DataContext="{Binding Main, Source={StaticResource Locator}}"
+        Title="ProFer" Height="720" Width="900">
+
+    <Window.Resources>
+        <Style x:Key="RoundedButton" TargetType="Button">
+            <Setter Property="Background" Value="SteelBlue"/>
+            <Setter Property="BorderBrush" Value="LightGray"/>
+            <Setter Property="BorderThickness" Value="0.5"/>
+            <Setter Property="Width" Value="80"/>
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="FontFamily" Value="Comic Sans MS"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+    </Window.Resources>
+    <Window.Background>
+        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+            <GradientStop Color="White" Offset="1"/>
+            <GradientStop Color="White" Offset="0"/>
+            <GradientStop Color="LightSteelBlue" Offset="0.51"/>
+        </LinearGradientBrush>
+    </Window.Background>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="6*"/>
+            <RowDefinition Height="2*"/>
+        </Grid.RowDefinitions>
+
+        <!--#region Client/Server buttons -->
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,10,0">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="30,0,0,0">
+                <Label Content="Name"/>
+                <TextBox Width="500" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding NameVisibility, Mode=OneWay}"/>
+            </StackPanel>
+            <Button Content="Connect" HorizontalAlignment="Right" Command="{Binding ActAsClientBtnCommand}" Width="100" Style="{StaticResource RoundedButton}"
+                    Margin="20,0,20,0">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="10"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+            <Button  Content="Act as Server" HorizontalAlignment="Right" Command="{Binding ActAsServerBtnCommand}" Width="100" Style="{StaticResource RoundedButton}"
+                     Margin="0,0,20,0">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="10"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </StackPanel>
+        <!--#endregion-->
+
+        <!--#region Data-Output  -->
+        <StackPanel Orientation="Horizontal" Margin="5" Grid.Row="1">
+            <StackPanel Width="200" Orientation="Vertical">
+                <Label Content="Players"></Label>
+                <ListBox Height="222" Margin="5,0,5,20" ItemsSource="{Binding PlayerList}" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Start" Command="{Binding StartGameCommand}" Margin="0,0,10,0">
+                        <Button.Resources>
+                            <Style TargetType="{x:Type Border}">
+                                <Setter Property="CornerRadius" Value="10"/>
+                            </Style>
+                        </Button.Resources>
+                        <Button.Style>
+                            <StaticResource ResourceKey="RoundedButton"/>
+                        </Button.Style>
+                    </Button>
+                <Button Content="Kick" Command="{Binding DropClientBtnCommand}">
+                    <Button.Resources>
+                        <Style TargetType="{x:Type Border}">
+                            <Setter Property="CornerRadius" Value="10"/>
+                        </Style>
+                    </Button.Resources>
+                    <Button.Style>
+                        <StaticResource ResourceKey="RoundedButton"/>
+                    </Button.Style>
+                </Button>
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Orientation="Vertical" Margin="20">
+                <DataGrid Margin="75,10,75,10" ItemsSource="{Binding Scores}" AutoGenerateColumns="True" IsReadOnly="True" Width="460" Height="310" />
+                <ListView ItemsSource="{Binding Messages}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" MinHeight="70" HorizontalContentAlignment="Center" BorderThickness="1" BorderBrush="Black" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True" MaxHeight="70" FontFamily="Comic Sans MS" Focusable="False" Padding="2">
+                    <ListView.Background>
+                        <SolidColorBrush Color="White" Opacity="0.5"/>
+                    </ListView.Background>
+                </ListView>
+            </StackPanel>
+        </StackPanel>
+        <!--#endregion-->
+        <StackPanel Orientation="Horizontal" Margin="15" Grid.Row="2" HorizontalAlignment="Center">
+            <StackPanel Width="100">
+                <Image  Height="80" Width="80" Source="{Binding DiceImage1}"/>
+                <CheckBox Content="keep" HorizontalAlignment="Center" Margin="15" Visibility="{Binding GameControlVisibility}"/>
+            </StackPanel>
+            <StackPanel Width="100">
+                <Image Height="80" Width="80" Source="{Binding DiceImage2}"/>
+                <CheckBox Content="keep" HorizontalAlignment="Center" Margin="15" Visibility="{Binding GameControlVisibility}"/>
+            </StackPanel>
+            <StackPanel Width="100">
+                <Image Height="80" Width="80" Source="{Binding DiceImage3}"/>
+                <CheckBox Content="keep" HorizontalAlignment="Center" Margin="15" Visibility="{Binding GameControlVisibility}"/>
+            </StackPanel>
+            <StackPanel Width="100">
+                <Image Height="80" Width="80" Source="{Binding DiceImage4}"/>
+                <CheckBox Content="keep" HorizontalAlignment="Center" Margin="15" Visibility="{Binding GameControlVisibility}"/>
+            </StackPanel>
+            <StackPanel Width="100">
+                <Image Height="80" Width="80" Source="{Binding DiceImage5}"/>
+                <CheckBox Content="keep" HorizontalAlignment="Center" Margin="15" Visibility="{Binding GameControlVisibility}"/>
+            </StackPanel>
+
+            <Button Content="Roll" Command="{Binding RollCommand}" Width="100" Style="{StaticResource RoundedButton}"
+                    Margin="50,0,0,0">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="10"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>
