@@ -4,6 +4,7 @@ using GalaSoft.MvvmLight.Command;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -20,82 +21,31 @@ namespace ProFer.ViewModel
         private bool isServer = false;
         private bool gameStarted = false;
 
-        public ObservableCollection<int> ActRoll { get; set; } = new ObservableCollection<int>(){6,6,6,6,6};
         public ObservableCollection<Player> PlayerList { get; set; } = new ObservableCollection<Player>();
         #endregion
         
-        #region dice images
-
-        private BitmapImage _diceImage1;
-        public BitmapImage DiceImage1
-        {
-            get
-            {return _diceImage1;
-            }
-            set
-            {
-                _diceImage1 = value; RaisePropertyChanged();
-            }
-        }
-        private BitmapImage _diceImage2;
-        public BitmapImage DiceImage2
-        {
-            get
-            {
-                return _diceImage2;
-            }
-            set
-            {
-                _diceImage2 = value; RaisePropertyChanged();
-            }
-        }
-        private BitmapImage _diceImage3;
-        public BitmapImage DiceImage3
-        {
-            get
-            {
-                return _diceImage3;
-            }
-            set
-            {
-                _diceImage3 = value; RaisePropertyChanged();
-            }
-        }
-        private BitmapImage _diceImage4;
-        public BitmapImage DiceImage4
-        {
-            get
-            {
-                return _diceImage4;
-            }
-            set
-            {
-                _diceImage4 = value; RaisePropertyChanged();
-            }
-        }
-        private BitmapImage _diceImage5;
-        public BitmapImage DiceImage5
-        {
-            get
-            {
-                return _diceImage5;
-            }
-            set
-            {
-                _diceImage5 = value; RaisePropertyChanged();
-            }
-        }
-        #endregion
-
         #region gui commands/params
+
+        public int TurnNumber { get; private set; } = 1;
         private string _name;
         public string Name
         {
             get { return _name; }
             set { _name = value; ActAsClientBtnCommand.RaiseCanExecuteChanged(); ActAsServerBtnCommand.RaiseCanExecuteChanged();}
         }
-        public string SelectedUser { get; set; }
-        private string _gameControlVisibility = "Hidden";
+        private Player _self;
+        public Player Self
+        {
+            get => _self;
+            set => _self = value;
+        }
+        private Player _selectedUser;
+        public Player SelectedUser
+        {
+            get => _selectedUser;
+            set { Set(ref _selectedUser, value); DropClientBtnCommand.RaiseCanExecuteChanged();}
+        }
+        private string _gameControlVisibility = "Visible";
         public string GameControlVisibility
         {
             get => _gameControlVisibility;
@@ -107,13 +57,18 @@ namespace ProFer.ViewModel
             get => _nameVisibility;
             set { _nameVisibility = value; RaisePropertyChanged(); }
         }
-        public ObservableCollection<string> Messages { get; set; } = new ObservableCollection<string>() { "---   Game started   ---" };
+        public ObservableCollection<string> Messages { get; set; } = new ObservableCollection<string>() { "---   Meskalero PokerDice   ---" };
 
-        private int[,] _scores;
-        public int[,] Scores
+        private Roll[] _actRoll = new Roll[5];
+        public Roll[] ActRoll
         {
-            get => _scores;
-            set { _scores = value; }
+            get => _actRoll;
+            set => Set(ref _actRoll, value);
+        }
+        private ObservableCollection<Roll> _selectedRoll = new ObservableCollection<Roll>();
+        public ObservableCollection<Roll> SelectableRoll
+        {
+            get => new ObservableCollection<Roll>(ActRoll.ToList());
         }
         #endregion
 
@@ -127,12 +82,25 @@ namespace ProFer.ViewModel
 
         public MainViewModel()
         {
+            //initialize dices with aces
+            for (int i = 0; i < ActRoll.Length; i++)
+            {
+                ActRoll[i] = new Roll(6);
+                ActRoll[i].DiceImage.Freeze();
+            }
+
             ActAsServerBtnCommand = new RelayCommand(
                 () =>
                 {
+                    com = new Com(true, GUIAction);
                     this.isConnected = true;
                     this.isServer = true;
-                    com = new Com(true, GUIAction);
+
+                    Self = new Player(Name);
+                    PlayerList.Add(Self);
+
+                    Player TestPlayer = new Player("TestPlayer");
+                    PlayerList.Add(TestPlayer);
 
                     ActAsClientBtnCommand.RaiseCanExecuteChanged();
                     StartGameCommand.RaiseCanExecuteChanged();
@@ -140,8 +108,6 @@ namespace ProFer.ViewModel
                     DropClientBtnCommand.RaiseCanExecuteChanged();
                     NameVisibility = "false";
 
-                    Player self = new Player(Name);
-                    PlayerList.Add(self);
                     Messages.Insert(0,"Welcome Player " + Name + " (Server). You can start the game whenever you wish.");
                     Task.Factory.StartNew(RotateDice);
 
@@ -150,16 +116,24 @@ namespace ProFer.ViewModel
             ActAsClientBtnCommand = new RelayCommand(
                 () =>
                 {
-                    this.isConnected = true;
-                    com = new Com(false, GUIAction); 
+                    try
+                    {
+                        com = new Com(false, GUIAction);
+                        this.isConnected = true;
 
-                    ActAsClientBtnCommand.RaiseCanExecuteChanged();
-                    ActAsServerBtnCommand.RaiseCanExecuteChanged();
-                    NameVisibility = "false";
+                        Self = new Player(Name);
+                        PlayerList.Add(Self);
 
-                    Messages.Insert(0,"Welcome Player " + Name + ". Please wait until the host starts the game..");
-                    Task.Factory.StartNew(RotateDice);
-
+                        ActAsClientBtnCommand.RaiseCanExecuteChanged();
+                        ActAsServerBtnCommand.RaiseCanExecuteChanged();
+                        NameVisibility = "false";
+                        Messages.Insert(0,"Welcome Player " + Name + ". Please wait until the host starts the game..");
+                        Task.Factory.StartNew(RotateDice);
+                    }
+                    catch (SocketException e)
+                    {
+                        Messages.Add("The computer at " + e.Message.Substring(e.Message.LastIndexOf('[')) + " said no");
+                    }
                 }, () => !this.isConnected && !string.IsNullOrWhiteSpace(_name));
 
             StartGameCommand = new RelayCommand(
@@ -167,7 +141,6 @@ namespace ProFer.ViewModel
                 {
                     gameStarted = true;
                     StartGameCommand.RaiseCanExecuteChanged();
-                    Scores = new int[10, 1];
                     Messages.Insert(0,"The game has started, rien ne vas plus!");
                     string message = "";
                     com.Send(message);
@@ -178,38 +151,53 @@ namespace ProFer.ViewModel
 
             DropClientBtnCommand = new RelayCommand(() =>
                 {
-                    com.DisconnectSpecificClient(SelectedUser);
-                    //PlayerList.Remove(SelectedUser); 
+                    com.DisconnectSpecificClient(SelectedUser.Name);
+                    PlayerList.Remove(SelectedUser); 
                 },
-                () => { return (SelectedUser != null && SelectedUser != Name && isServer); });
+                () => { return (SelectedUser != null && SelectedUser.Name != Self.Name && isServer); });
 
             RollCommand = new RelayCommand(() =>
                 {
-                    Messages.Insert(0,"...rolling...");
-                    //PlayerList.Remove(SelectedUser); 
+                    Messages.Insert(0,Self.Name + " is rolling the dice...");
+                    //Task.Factory.StartNew(Shuffle);
+                    Messages.Insert(0,"make your turn, " + Self.Name);
+                    for (int i = 0; i < ActRoll.Length; i++)
+                    {
+                        ActRoll[i].Cleanup();
+                        ActRoll[i] = new Roll();
+                        ActRoll[i].DiceImage.Freeze();
+                        ActRoll[i].RaisePropertyChanged();
+
+                    }
+                    RaisePropertyChanged("");
+                    RaisePropertyChanged("SelectableRoll");
                 },
-                () => { return (GameControlVisibility == "visible"); });
+                () => { return (GameControlVisibility == "Visible"); });
         }
 
         private void RotateDice()
         {
-            Thread.Sleep(1500);
-            while (true)
+            while (!gameStarted)
             {
-                ActRoll.RemoveAt(4);
-                ActRoll.Insert(0, new Random().Next(1, 7));
-                DiceImage1=new BitmapImage(new Uri($"..\\..\\..\\img\\{ActRoll[0]}.png", UriKind.Relative));
-                DiceImage1.Freeze();
-                DiceImage2 = new BitmapImage(new Uri($"..\\..\\..\\img\\{ActRoll[1]}.png", UriKind.Relative));
-                DiceImage2.Freeze();
-                DiceImage3 = new BitmapImage(new Uri($"..\\..\\..\\img\\{ActRoll[2]}.png", UriKind.Relative));
-                DiceImage3.Freeze();
-                DiceImage4 = new BitmapImage(new Uri($"..\\..\\..\\img\\{ActRoll[3]}.png", UriKind.Relative));
-                DiceImage4.Freeze();
-                DiceImage5 = new BitmapImage(new Uri($"..\\..\\..\\img\\{ActRoll[4]}.png", UriKind.Relative));
-                DiceImage5.Freeze();
+                for (int i = 0; i < ActRoll.Length; i++)
+                {
+                    ActRoll[i] = new Roll();
+                    ActRoll[i].DiceImage.Freeze();
+                }
+                RaisePropertyChanged("ActRoll");
                 Thread.Sleep(1500);
             }
+        }
+        private void Shuffle()
+        {
+            for (int i = 0; i < 30; i++)
+            {
+                int randNo = new Random().Next(0, 5);
+                ActRoll[randNo] = new Roll();
+                ActRoll[randNo].DiceImage.Freeze();
+                RaisePropertyChanged("ActRoll");
+            }
+            Thread.Sleep(50);
         }
 
         private void GUIAction(string message)

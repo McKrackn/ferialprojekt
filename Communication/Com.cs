@@ -35,7 +35,15 @@ namespace ProFer.Communication
             else
             {
                 TcpClient client = new TcpClient();
-                client.Connect(new IPEndPoint(IPAddress.Loopback, port));
+                try
+                {
+                    client.Connect(new IPEndPoint(IPAddress.Loopback, port));
+                }
+                catch (SocketException e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
                 clientSocket = client.Client;
                 Task.Factory.StartNew(Receive);
             }
@@ -84,7 +92,7 @@ namespace ProFer.Communication
             GUIAction(message);
             foreach (var item in clients)
             {
-                if (item.Clientsocket != senderSocket)
+                if (item.Clientsocket != senderSocket )
                 {
                     item.Send(message);
                 }
