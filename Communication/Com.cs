@@ -1,11 +1,14 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ProFer.Model;
 
 namespace ProFer.Communication
 {
@@ -19,9 +22,9 @@ namespace ProFer.Communication
         public Action<string> GUIAction;
         Thread acceptingThread;
         List<ClientHandler> clients;
+        ObservableCollection<Player> players;
 
-
-        public Com(bool isServer, Action<string> action)
+        public Com(bool isServer, Action<string> action, ObservableCollection<Player> playerList)
         {
             this.GUIAction = action;
 
@@ -31,6 +34,7 @@ namespace ProFer.Communication
                 serverSocket.Bind(new IPEndPoint(IPAddress.Loopback, port));
                 serverSocket.Listen(5);
                 Task.Factory.StartNew(StartAccepting);
+                this.players = playerList;
             }
             else
             {
@@ -51,11 +55,16 @@ namespace ProFer.Communication
 
         private void Receive()
         {
-            while (true)
+            string message = "";
+            while (!message.Contains("@quit"))
             {
-                var length = clientSocket.Receive(buffer);
-                GUIAction(Encoding.UTF8.GetString(buffer, 0, length));
+                int length = clientSocket.Receive(buffer);
+                message = Encoding.UTF8.GetString(buffer, 0, length);
+                //inform GUI via delegate
+                GUIAction(message);
+                message = "";
             }
+            clientSocket.Close();
         }
 
         private void StartAccepting()
@@ -70,6 +79,12 @@ namespace ProFer.Communication
             while (acceptingThread.IsAlive)
             {
                 clients.Add(new ClientHandler(serverSocket.Accept(), new Action<string, Socket>(NewMessageReceived)));
+                foreach (Player actPlayer in players)
+                {
+                    string msg = "";
+                    msg = "np:" + actPlayer.Name;
+                    clients.Last().Send(msg);
+                }
             }
         }
 

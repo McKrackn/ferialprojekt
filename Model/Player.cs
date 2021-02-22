@@ -24,78 +24,79 @@ namespace ProFer.Model
             set { _name = value; RaisePropertyChanged(); }
         }
 
+        public int SumRolls
+        {
+            get { return Neuner + Zehner + Buben + Damen + Koenige + Asse + Strasse + Full + Poker + Grande; RaisePropertyChanged(); }
+        }
+
         public int Neuner
         {
             get { return _neuner; }
-            set { _neuner = value; RaisePropertyChanged(); }
+            set { _neuner = value; RaisePropertyChanged("SumRolls"); RaisePropertyChanged();}
         }
 
         public int Zehner
         {
             get { return _zehner; }
-            set { _zehner = value; RaisePropertyChanged(); }
+            set { _zehner = value; RaisePropertyChanged("SumRolls"); RaisePropertyChanged(); }
         }
 
         public int Buben
         {
             get { return _buben; }
-            set { _buben = value; RaisePropertyChanged(); }
+            set { _buben = value; RaisePropertyChanged("SumRolls"); RaisePropertyChanged(); }
         }
 
         public int Damen
         {
             get { return _damen; }
-            set { _damen = value; RaisePropertyChanged(); }
+            set { _damen = value; RaisePropertyChanged("SumRolls"); RaisePropertyChanged(); }
         }
 
         public int Koenige
         {
             get { return _koenige; }
-            set { _koenige = value; RaisePropertyChanged(); }
+            set { _koenige = value; RaisePropertyChanged("SumRolls"); RaisePropertyChanged(); }
         }
 
         public int Asse
         {
             get { return _asse; }
-            set { _asse = value; RaisePropertyChanged(); }
+            set { _asse = value; RaisePropertyChanged("SumRolls"); RaisePropertyChanged(); }
         }
 
         public int Strasse
         {
             get { return _strasse; }
-            set { _strasse = value; RaisePropertyChanged(); }
+            set { _strasse = value; RaisePropertyChanged("SumRolls"); RaisePropertyChanged(); }
         }
 
         public int Full
         {
             get { return _full; }
-            set { _full = value; RaisePropertyChanged(); }
+            set { _full = value; RaisePropertyChanged("SumRolls"); RaisePropertyChanged(); }
         }
 
         public int Poker
         {
             get { return _poker; }
-            set { _poker = value; RaisePropertyChanged(); }
+            set { _poker = value; RaisePropertyChanged("SumRolls"); RaisePropertyChanged(); }
         }
 
         public int Grande
         {
             get { return _grande; }
-            set { _grande = value; RaisePropertyChanged(); }
+            set { _grande = value; RaisePropertyChanged("SumRolls"); RaisePropertyChanged(); }
         }
 
         public Player(string Name)
         {
             this.Name = Name;
         }
-        public int GetSum()
-        {
-            return _neuner + _zehner + _buben + _damen + _koenige + _asse + _strasse + _full + _poker + _grande;
-
-        }
+        
         public override string ToString()
         {
-            return Name + "     " + GetSum();
+            return Name;
         }
     }
 }

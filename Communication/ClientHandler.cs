@@ -33,15 +33,16 @@ namespace ProFer.Communication
             string message = "";
             while (!message.Contains(endMessage))
             {
-                int length = Clientsocket.Receive(buffer);
+                var length = Clientsocket.Receive(buffer);
                 message = Encoding.UTF8.GetString(buffer, 0, length);
                 //set name property if not already done
-                if (Name == null && message.Contains(":"))
+                if (Name == null && message.Contains("np:"))
                 {
-                    Name = message.Split(':')[0];
+                    Name = message.Split("np:")[1];
                 }
                 //inform GUI via delegate
                 action(message, Clientsocket);
+                message = "";
             }
             Close();
         }
@@ -49,7 +50,9 @@ namespace ProFer.Communication
         public void Send(string message)
         {
             Clientsocket.Send(Encoding.UTF8.GetBytes(message));
+            message = "";
         }
+
         public void Close()
         {
             Send(endMessage); //sends endmessage to client 
