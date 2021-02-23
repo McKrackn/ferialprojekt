@@ -9,7 +9,7 @@
 
     <Window.Resources>
         <Style x:Key="RoundedButton" TargetType="Button">
-            <Setter Property="Background" Value="SteelBlue"/>
+            <Setter Property="Background" Value="{Binding ButtonColor}"/>
             <Setter Property="BorderBrush" Value="LightGray"/>
             <Setter Property="BorderThickness" Value="0.5"/>
             <Setter Property="Width" Value="80"/>
@@ -59,7 +59,7 @@
         </StackPanel>
         <!--#endregion-->
 
-        <!--#region Data-Output  -->
+        <!--#region Player-Output  -->
         <StackPanel Orientation="Horizontal" Margin="10,10,10,10" Grid.Row="1">
             <StackPanel Width="200" Orientation="Vertical" Margin="20,0,0,0">
                 <Label Content="Players" FontWeight="Bold"></Label>
@@ -87,7 +87,9 @@
                     </Button>
                 </StackPanel>
             </StackPanel>
+            <!--#endregion-->
 
+            <!--#region Take-Buttons  -->
             <Grid Margin="10">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="5*"/>
@@ -169,7 +171,9 @@
                         </Button.Resources>
                     </Button>
                 </StackPanel>
+                <!--#endregion-->
 
+                <!--#region Scores-Output  -->
                 <ItemsControl ItemsSource="{Binding PlayerList}"  Grid.Row="0" Grid.Column="1" >
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -179,23 +183,190 @@
 
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-
-
-                            <StackPanel Orientation="Vertical" Width="75">
-                                <Label Content="{Binding Name}" VerticalAlignment="Center" Margin="5,0" FontFamily="Comic Sans MS" FontWeight="Bold"/>
-                                <TextBlock Height="17" Text="{Binding Neuner}" Background="White" Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS"></TextBlock>
-                                <TextBlock Height="17" Text="{Binding Zehner}" Background="White" Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS" ></TextBlock>
-                                <TextBlock Height="17" Text="{Binding Buben}" Background="White" Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS"></TextBlock>
-                                <TextBlock Height="17" Text="{Binding Damen}" Background="White" Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS" ></TextBlock>
-                                <TextBlock Height="17" Text="{Binding Koenige}" Background="White" Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS" ></TextBlock>
-                                <TextBlock Height="17" Text="{Binding Asse}" Background="White" Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS" ></TextBlock>
-                                <TextBlock Height="17" Text="{Binding Strasse}" Background="White"  Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS"></TextBlock>
-                                <TextBlock Height="17" Text="{Binding Full}" Background="White"  Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS"></TextBlock>
-                                <TextBlock Height="17" Text="{Binding Poker}" Background="White"  Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS"></TextBlock>
-                                <TextBlock Height="17" Text="{Binding Grande}" Background="White"  Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS"></TextBlock>
+                            <StackPanel Orientation="Vertical" Width="75" Background="White" Opacity="0.8">
+                                <Label Content="{Binding Name}" VerticalAlignment="Center" HorizontalContentAlignment="Center" Margin="5,0" FontFamily="Comic Sans MS" FontWeight="Bold"/>
+                                <TextBlock Height="17" Text="{Binding Neuner}" Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Neuner}" Value="-1">
+                                                    <Setter Property="Background" Value="Red"></Setter>
+                                                    <Setter Property="Foreground" Value="Red"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Neuner}" Value="5">
+                                                    <Setter Property="Background" Value="LightGreen"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Neuner}" Value="0">
+                                                    <Setter Property="Foreground" Value="White"></Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Height="17" Text="{Binding Zehner}" Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS" >
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Zehner}" Value="-2">
+                                                    <Setter Property="Background" Value="Red"></Setter>
+                                                    <Setter Property="Foreground" Value="Red"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Zehner}" Value="10">
+                                                    <Setter Property="Background" Value="LightGreen"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Zehner}" Value="0">
+                                                    <Setter Property="Foreground" Value="White"></Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Height="17" Text="{Binding Buben}" Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Buben}" Value="-3">
+                                                    <Setter Property="Background" Value="Red"></Setter>
+                                                    <Setter Property="Foreground" Value="Red"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Buben}" Value="15">
+                                                    <Setter Property="Background" Value="LightGreen"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Buben}" Value="0">
+                                                    <Setter Property="Foreground" Value="White"></Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Height="17" Text="{Binding Damen}" Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS" >
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Damen}" Value="-4">
+                                                    <Setter Property="Background" Value="Red"></Setter>
+                                                    <Setter Property="Foreground" Value="Red"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Damen}" Value="20">
+                                                    <Setter Property="Background" Value="LightGreen"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Damen}" Value="0">
+                                                    <Setter Property="Foreground" Value="White"></Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Height="17" Text="{Binding Koenige}" Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS" >
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Koenige}" Value="-5">
+                                                    <Setter Property="Background" Value="Red"></Setter>
+                                                    <Setter Property="Foreground" Value="Red"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Koenige}" Value="25">
+                                                    <Setter Property="Background" Value="LightGreen"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Koenige}" Value="0">
+                                                    <Setter Property="Foreground" Value="White"></Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Height="17" Text="{Binding Asse}" Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS" >
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Asse}" Value="-6">
+                                                    <Setter Property="Background" Value="Red"></Setter>
+                                                    <Setter Property="Foreground" Value="Red"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Asse}" Value="30">
+                                                    <Setter Property="Background" Value="LightGreen"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Asse}" Value="0">
+                                                    <Setter Property="Foreground" Value="White"></Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Height="17" Text="{Binding Strasse}"  Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Strasse}" Value="-1">
+                                                    <Setter Property="Background" Value="Red"></Setter>
+                                                    <Setter Property="Foreground" Value="Red"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Strasse}" Value="25">
+                                                    <Setter Property="Background" Value="LightGreen"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Strasse}" Value="0">
+                                                    <Setter Property="Foreground" Value="White"></Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Height="17" Text="{Binding Full}"  Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Full}" Value="-1">
+                                                    <Setter Property="Background" Value="Red"></Setter>
+                                                    <Setter Property="Foreground" Value="Red"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Full}" Value="35">
+                                                    <Setter Property="Background" Value="LightGreen"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Full}" Value="0">
+                                                    <Setter Property="Foreground" Value="White"></Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Height="17" Text="{Binding Poker}"  Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Poker}" Value="-1">
+                                                    <Setter Property="Background" Value="Red"></Setter>
+                                                    <Setter Property="Foreground" Value="Red"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Poker}" Value="45">
+                                                    <Setter Property="Background" Value="LightGreen"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Poker}" Value="0">
+                                                    <Setter Property="Foreground" Value="White"></Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Height="17" Text="{Binding Grande}"  Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Grande}" Value="-1">
+                                                    <Setter Property="Background" Value="Red"></Setter>
+                                                    <Setter Property="Foreground" Value="Red"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Grande}" Value="100">
+                                                    <Setter Property="Background" Value="LightGreen"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Grande}" Value="0">
+                                                    <Setter Property="Foreground" Value="White"></Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                                 <Label BorderThickness="0,2,0,0" BorderBrush="Black" Content="{Binding SumRolls}" VerticalAlignment="Center" Margin="5,5" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
                             </StackPanel>
-
 
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

@@ -26,7 +26,9 @@ namespace ProFer.Model
 
         public int SumRolls
         {
-            get { return Neuner + Zehner + Buben + Damen + Koenige + Asse + Strasse + Full + Poker + Grande; RaisePropertyChanged(); }
+            //_grande = RollNumber == 2 ? 100 : 50;
+
+            get { return (Neuner == -1 ? 0 : Neuner) + (Zehner == -2 ? 0 : Zehner) + (Buben == -3 ? 0 : Buben) + (Damen == -4 ? 0 : Damen) + (Koenige == -5 ? 0 : Koenige) + (Asse == -6 ? 0 : Asse) + (Strasse == -1 ? 0 : Strasse) + (Full == -1 ? 0 : Full) + (Poker == -1 ? 0 : Poker) + (Grande == -1 ? 0 : Grande); }
         }
 
         public int Neuner

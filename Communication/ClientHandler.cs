@@ -33,16 +33,24 @@ namespace ProFer.Communication
             string message = "";
             while (!message.Contains(endMessage))
             {
-                var length = Clientsocket.Receive(buffer);
-                message = Encoding.UTF8.GetString(buffer, 0, length);
-                //set name property if not already done
-                if (Name == null && message.Contains("np:"))
+                try
                 {
-                    Name = message.Split("np:")[1];
+                    var length = Clientsocket.Receive(buffer);
+                    message = Encoding.UTF8.GetString(buffer, 0, length);
+                    //set name property if not already done
+                    if (Name == null && message.Contains("np:"))
+                    {
+                        Name = message.Split("np:")[1];
+                    }
+                    //inform GUI via delegate
+                    action(message, Clientsocket);
+                    message = "";
                 }
-                //inform GUI via delegate
-                action(message, Clientsocket);
-                message = "";
+                catch (SocketException e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
             }
             Close();
         }

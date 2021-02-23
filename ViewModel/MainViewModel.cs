@@ -1,32 +1,29 @@
-﻿using ProFer.Communication;
-using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Command;
-using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Media.Imaging;
+using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
+using ProFer.Communication;
 using ProFer.Model;
 
 namespace ProFer.ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
-        #region globals
         private Com com;
-        private bool isConnected = false;
-        private bool isServer = false;
-        private bool gameStarted = false;
+        private bool isConnected;
+        private bool isServer;
+        private bool gameStarted;
         public bool GameStarted
         {
             get => gameStarted;
             set => gameStarted = value;
         }
-
         public ObservableCollection<Player> PlayerList { get; set; } = new ObservableCollection<Player>();
+
+        #region roll values
         public int Neuner
         {
             get => _neuner;
@@ -62,25 +59,25 @@ namespace ProFer.ViewModel
             set { _asse = value; TakeStreetBtnCommand.RaiseCanExecuteChanged(); }
         }
 
-        public bool Strasse
+        public int Strasse
         {
             get => _strasse;
             set { _strasse = value;TakeStreetBtnCommand.RaiseCanExecuteChanged(); }
         }
 
-        public bool Full
+        public int Full
         {
             get => _full;
             set { _full = value; TakeFullBtnCommand.RaiseCanExecuteChanged(); }
         }
 
-        public bool Poker
+        public int Poker
         {
             get => _poker;
             set { _poker = value; TakePokerBtnCommand.RaiseCanExecuteChanged(); }
         }
 
-        public bool Grande
+        public int Grande
         {
             get => _grande;
             set { _grande = value; TakeGrandBtnCommand.RaiseCanExecuteChanged(); }
@@ -92,25 +89,30 @@ namespace ProFer.ViewModel
         private int _damen;
         private int _koenige;
         private int _asse;
-        private bool _strasse;
-        private bool _full;
-        private bool _poker;
-        private bool _grande;
+        private int _strasse;
+        private int _full;
+        private int _poker;
+        private int _grande;
         #endregion
 
         #region gui commands/params
-
+        private int _rollNumber = 1;
         public int RollNumber
         {
             get => _rollNumber;
             private set { _rollNumber = value; }//RollCommand.RaiseCanExecuteChanged(); }
         }
-
         private string _name = "";
         public string Name
         {
             get { return _name; }
             set { _name = value; ActAsClientBtnCommand.RaiseCanExecuteChanged(); ActAsServerBtnCommand.RaiseCanExecuteChanged();}
+        }
+        private string _buttonColor = "SteelBlue";
+        public string ButtonColor
+        {
+            get { return _buttonColor; }
+            set { _buttonColor = value; RaisePropertyChanged(); TakeNinesBtnCommand.RaiseCanExecuteChanged();}
         }
         private Player _self;
         public Player Self
@@ -136,7 +138,7 @@ namespace ProFer.ViewModel
             get => _nameVisibility;
             set { _nameVisibility = value; RaisePropertyChanged(); }
         }
-        public ObservableCollection<string> Messages { get; set; } = new ObservableCollection<string>() { "---   Meskalero PokerDice   ---" };
+        public ObservableCollection<string> Messages { get; set; } = new ObservableCollection<string> { "---   Meskalero PokerDice   ---" };
 
         private Roll[] _actRoll = new Roll[5];
         public Roll[] ActRoll
@@ -150,29 +152,21 @@ namespace ProFer.ViewModel
             get => new ObservableCollection<Roll>(ActRoll.ToList());
         }
         private Roll rollSelectedItem;
-        private int _rollNumber = 1;
-        private string _actPlayer;
-
         public Roll RollSelectedItem
-        {
-            get
-            {
-                return rollSelectedItem;
-            }
-            set
-            {
+        { get { return rollSelectedItem; }
+            set {
                 var selectedItems = SelectableRoll.Count(x => x.IsSelected);
-                this.RaisePropertyChanged("RollSelectedItem");
+                RaisePropertyChanged();
             }
         }
-
+        private string _actPlayer;
         public string ActPlayer
         {
             get => _actPlayer;
             set { _actPlayer = value; RollCommand.RaiseCanExecuteChanged(); }
         }
 
-        public bool RollFinished { get; set; } = false;
+        public bool RollFinished { get; set; }
         #endregion
 
         #region RelayCommands
@@ -208,117 +202,130 @@ namespace ProFer.ViewModel
             TakeNinesBtnCommand = new RelayCommand(
                 () =>
                 {
-                    RollNumber = 4;
+                    ButtonColor = "SteelBlue";
+                    RollNumber = 5;
                     com.Send("nt:" + Self.Name + ":" + _neuner);
-                    RollFinished = true;
                     Messages.Insert(0,"you took " + _neuner + " nines, making " + _neuner*1 + " points");
                     PlayerList[0].Neuner = _neuner * 1;
-                    RollCommand.RaiseCanExecuteChanged();
-                    TakeNinesBtnCommand.RaiseCanExecuteChanged();
+                    RefreshTakeButtons();
+                    RollFinished = true;
                 },
-                () => RollNumber>1 && Neuner>0 && PlayerList[0].Neuner==0);
+                () => (RollNumber > 1 && Neuner > 0 && PlayerList[0].Neuner == 0 && RollNumber <= 4) || (ButtonColor=="Red" && PlayerList[0].Neuner == 0));
             TakeTensBtnCommand = new RelayCommand(
                 () =>
                 {
-                    RollNumber = 3;
+                    ButtonColor = "SteelBlue";
+                    RollNumber = 5;
                     com.Send("tt:" + Self.Name + ":" + _zehner);
                     Messages.Insert(0, "you took " + _zehner + " tens, making " + _zehner * 2 + " points");
-                    PlayerList[0].Zehner = _zehner * 2;
-                    RollCommand.RaiseCanExecuteChanged();
-                    TakeTensBtnCommand.RaiseCanExecuteChanged();
+                    PlayerList[0].Zehner = _zehner * 2;         
+                    RefreshTakeButtons();
+                    RollFinished = true;
                 },
-                () => RollNumber > 1 && Zehner > 0 && PlayerList[0].Zehner==0);
+                () => (RollNumber > 1 && Zehner > 0 && PlayerList[0].Zehner == 0 && RollNumber <= 4) || (ButtonColor == "Red" && PlayerList[0].Zehner == 0));
             TakeJacksBtnCommand = new RelayCommand(
                 () =>
                 {
-                    RollNumber = 3;
+                    ButtonColor = "SteelBlue";
+                    RollNumber = 5;
                     com.Send("jt:" + Self.Name + ":" + _buben);
                     Messages.Insert(0, "you took " + _buben + " jacks, making " + _buben * 3 + " points");
-                    PlayerList[0].Buben = _buben * 3;
-                    RollCommand.RaiseCanExecuteChanged();
-                    TakeJacksBtnCommand.RaiseCanExecuteChanged();
+                    PlayerList[0].Buben = _buben * 3; 
+                    RefreshTakeButtons();
+                    RollFinished = true;
                 },
-                () => RollNumber > 1 && Buben > 0 && PlayerList[0].Buben==0);
+                () => (RollNumber > 1 && Buben > 0 && PlayerList[0].Buben== 0 && RollNumber <= 4) || (ButtonColor == "Red" && PlayerList[0].Buben == 0));
             TakeQueensBtnCommand = new RelayCommand(
                 () =>
                 {
-                    RollNumber = 3;
+                    ButtonColor = "SteelBlue";
+                    RollNumber = 5;
                     com.Send("qt:" + Self.Name + ":" + _damen);
                     Messages.Insert(0, "you took " + _damen + " queens, making " + _damen * 4 + " points");
                     PlayerList[0].Damen = _damen * 4;
-                    RollCommand.RaiseCanExecuteChanged();
-                    TakeQueensBtnCommand.RaiseCanExecuteChanged();
+                    RefreshTakeButtons();
+                    RollFinished = true;
                 },
-                () => RollNumber > 1 && Damen > 0 && PlayerList[0].Damen==0);
+                () => (RollNumber > 1 && Damen > 0 && PlayerList[0].Damen== 0 && RollNumber <= 4) || (ButtonColor == "Red" && PlayerList[0].Damen == 0));
             TakeKingsBtnCommand = new RelayCommand(
                 () =>
                 {
-                    RollNumber = 3;
+                    ButtonColor = "SteelBlue";
+                    RollNumber = 5;
                     com.Send("kt:" + Self.Name + ":" + _koenige);
                     Messages.Insert(0, "you took " + _koenige + " kings, making " + _koenige * 5 + " points");
                     PlayerList[0].Koenige = _koenige * 5;
-                    RollCommand.RaiseCanExecuteChanged();
-                    TakeKingsBtnCommand.RaiseCanExecuteChanged();
+                    RefreshTakeButtons();
+                    RollFinished = true;
                 },
-                () => RollNumber > 1 && Koenige > 0 && PlayerList[0].Koenige==0);
+                () => (RollNumber > 1 && Koenige > 0 && PlayerList[0].Koenige== 0 && RollNumber <= 4) || (ButtonColor == "Red" && PlayerList[0].Koenige == 0));
             TakeAcesBtnCommand = new RelayCommand(
                 () =>
                 {
-                    RollNumber = 3;
+                    ButtonColor = "SteelBlue";
+                    RollNumber = 5;
                     com.Send("at:" + Self.Name + ":" + _asse);
                     Messages.Insert(0, "you took " + _asse + " nines, making " + _asse * 6 + " points");
                     PlayerList[0].Asse = _asse * 6;
-                    RollCommand.RaiseCanExecuteChanged();
-                    TakeAcesBtnCommand.RaiseCanExecuteChanged();
+                    RefreshTakeButtons();
+                    RollFinished = true;
                 },
-                () => RollNumber > 1 && Asse > 0 && PlayerList[0].Asse==0);
+                () => (RollNumber > 1 && Asse > 0 && PlayerList[0].Asse== 0 && RollNumber <= 4) || (ButtonColor == "Red" && PlayerList[0].Asse == 0));
             TakeStreetBtnCommand = new RelayCommand(
                 () =>
                 {
-                    RollNumber = 3;
-                    com.Send("nt:" + Self.Name + ":" + _neuner);
-                    Messages.Insert(0, "you took " + _neuner + " nines, making " + _neuner * 1 + " points");
-                    PlayerList[0].Neuner = _neuner * 1;
-                    RollCommand.RaiseCanExecuteChanged();
+                    ButtonColor = "SteelBlue";
+                    RollNumber = 5;
+                    com.Send("st:" + Self.Name + ":" + _strasse);
+                    Messages.Insert(0, "you took a street, making " + _strasse + " points");
+                    PlayerList[0].Strasse = _strasse;
+                    RefreshTakeButtons();
+                    RollFinished = true;
                 },
-                () => RollNumber > 1 && Neuner > 0);
+                () => (RollNumber > 1 && Strasse > 0 && PlayerList[0].Strasse == 0 && RollNumber <= 4) || (ButtonColor == "Red" && PlayerList[0].Strasse == 0));
             TakeFullBtnCommand = new RelayCommand(
                 () =>
                 {
-                    RollNumber = 3;
-                    com.Send("nt:" + Self.Name + ":" + _neuner);
-                    Messages.Insert(0, "you took " + _neuner + " nines, making " + _neuner * 1 + " points");
-                    PlayerList[0].Neuner = _neuner * 1;
-                    RollCommand.RaiseCanExecuteChanged();
+                    ButtonColor = "SteelBlue";
+                    RollNumber = 5;
+                    com.Send("ft:" + Self.Name + ":" + _full);
+                    Messages.Insert(0, "you took a full, making " + _full + " points");
+                    PlayerList[0].Full = _full;
+                    RefreshTakeButtons();
+                    RollFinished = true;
                 },
-                () => RollNumber > 1 && Neuner > 0);
+                () => (RollNumber > 1 && Full > 0 && PlayerList[0].Full == 0 && RollNumber <= 4) || (ButtonColor == "Red" && PlayerList[0].Full == 0));
             TakePokerBtnCommand = new RelayCommand(
                 () =>
                 {
-                    RollNumber = 3;
-                    com.Send("nt:" + Self.Name + ":" + _neuner);
-                    Messages.Insert(0, "you took " + _neuner + " nines, making " + _neuner * 1 + " points");
-                    PlayerList[0].Neuner = _neuner * 1;
-                    RollCommand.RaiseCanExecuteChanged();
+                    ButtonColor = "SteelBlue";
+                    RollNumber = 5;
+                    com.Send("pt:" + Self.Name + ":" + _poker);
+                    Messages.Insert(0, "you took a poker, making " + _poker + " points");
+                    PlayerList[0].Poker = _poker * 1;
+                    RefreshTakeButtons();
+                    RollFinished = true;
                 },
-                () => RollNumber > 1 && Neuner > 0);
+                () => (RollNumber > 1 && Poker > 0 && PlayerList[0].Poker == 0 && RollNumber <= 4) || (ButtonColor == "Red" && PlayerList[0].Poker == 0));
             TakeGrandBtnCommand = new RelayCommand(
                 () =>
                 {
-                    RollNumber = 3;
-                    com.Send("nt:" + Self.Name + ":" + _neuner);
-                    Messages.Insert(0, "you took " + _neuner + " nines, making " + _neuner * 1 + " points");
-                    PlayerList[0].Neuner = _neuner * 1;
-                    RollCommand.RaiseCanExecuteChanged();
+                    ButtonColor = "SteelBlue";
+                    RollNumber = 5;
+                    com.Send("gt:" + Self.Name + ":" + _grande);
+                    Messages.Insert(0, "xox you made a grand, what a fine roll! " + _grande + " points for you xox");
+                    PlayerList[0].Grande = _grande * 1;
+                    RefreshTakeButtons();
+                    RollFinished = true;
                 },
-                () => RollNumber > 1 && Neuner > 0);
+                () => (RollNumber > 1 && Grande > 0 && PlayerList[0].Grande == 0 && RollNumber <= 4) || (ButtonColor == "Red" && PlayerList[0].Grande == 0));
 
             ActAsServerBtnCommand = new RelayCommand(
                 () =>
                 {
                     com = new Com(true, GUIAction, PlayerList);
-                    this.isConnected = true;
-                    this.isServer = true;
+                    isConnected = true;
+                    isServer = true;
 
                     Self = new Player(Name);
                     PlayerList.Add(Self);
@@ -332,7 +339,7 @@ namespace ProFer.ViewModel
                     Messages.Insert(0,"Welcome Player " + Name + " (Server). You can start the game whenever you wish.");
                     Task.Factory.StartNew(RotateDice);
 
-                }, () => !this.isConnected && !string.IsNullOrWhiteSpace(_name));
+                }, () => !isConnected && !string.IsNullOrWhiteSpace(_name));
 
             ActAsClientBtnCommand = new RelayCommand(
                 () =>
@@ -340,7 +347,7 @@ namespace ProFer.ViewModel
                     try
                     {
                         com = new Com(false, GUIAction, null);
-                        this.isConnected = true;
+                        isConnected = true;
 
                         Self = new Player(Name);
                         PlayerList.Add(Self);
@@ -356,7 +363,7 @@ namespace ProFer.ViewModel
                     {
                         Messages.Insert(0,"The computer at " + e.Message.Substring(e.Message.LastIndexOf('[')) + " said no");
                     }
-                }, () => !this.isConnected && !string.IsNullOrWhiteSpace(_name));
+                }, () => !isConnected && !string.IsNullOrWhiteSpace(_name));
 
             StartGameCommand = new RelayCommand(
                 () =>
@@ -379,20 +386,6 @@ namespace ProFer.ViewModel
                 {
                     com.Send("nr:"+Self.Name+":"+RollNumber);
                     Messages.Insert(0,"you are rolling the dice for the " + RollNumber + ". time...");
-                    //Task.Factory.StartNew(Shuffle);
-                    /*for (int i = 0; i < 30; i++)
-                    {
-                        int randNo = new Random().Next(0, 5);
-                        if (!ActRoll[randNo].IsSelected)
-                        {
-                            ActRoll[randNo].Cleanup();
-                            ActRoll[randNo] = new Roll();
-                            ActRoll[randNo].DiceImage.Freeze();
-                        }
-                        Thread.Sleep(50);
-                        RaisePropertyChanged("SelectableRoll");
-
-                    }*/
                     for (int i = 0; i < ActRoll.Length; i++)
                     {
                         if (RollNumber!=1)
@@ -434,10 +427,9 @@ namespace ProFer.ViewModel
                         }
                         sendRoll = sendRoll + "a " + actRoll.Description + ", ";
                     }
-                    com.Send(sendRoll);
-                    com.Send(sendSelected);
-                    if (RollNumber==3) RollCommand.RaiseCanExecuteChanged();
+                    com.Send("rm:" + sendRoll + sendSelected);
                     CalculateRoll();
+                    RollCommand.RaiseCanExecuteChanged();
                 },
                 () => { return (GameControlVisibility == "Visible" && RollNumber <= 3 && ActPlayer==Name); });
         }
@@ -498,62 +490,91 @@ namespace ProFer.ViewModel
                 }
             }
             TakeAcesBtnCommand.RaiseCanExecuteChanged();
-            _neuner = 0;
-            foreach (var nineRoll in ActRoll)
+            _strasse = 0;
+            if (_zehner == 1 && _buben == 1 && _damen == 1 && _koenige == 1)
             {
-                if (nineRoll.Value == 1)
-                {
-                    _neuner++;
-                }
+                _strasse = RollNumber == 2 ? 25 : 20;
             }
-            TakeNinesBtnCommand.RaiseCanExecuteChanged();
-            _neuner = 0;
-            foreach (var nineRoll in ActRoll)
+            TakeStreetBtnCommand.RaiseCanExecuteChanged();
+            _full = 0;
+            if ((_neuner == 3 || _zehner == 3 || _buben == 3 || _damen == 3 || _koenige == 3 || _asse == 3) && (_neuner == 2 || _zehner == 2 || _buben == 2 || _damen == 2 || _koenige == 2 || _asse == 2))
             {
-                if (nineRoll.Value == 1)
-                {
-                    _neuner++;
-                }
+                _full = RollNumber == 2 ? 35 : 30;
             }
-            TakeNinesBtnCommand.RaiseCanExecuteChanged();
-            _neuner = 0;
-            foreach (var nineRoll in ActRoll)
+            TakeFullBtnCommand.RaiseCanExecuteChanged();
+            _poker = 0;
+            if (_neuner == 4 || _zehner == 4 || _buben == 4 || _damen == 4 || _koenige == 4 || _asse == 4)
             {
-                if (nineRoll.Value == 1)
-                {
-                    _neuner++;
-                }
+                _poker = RollNumber == 2 ? 45 : 40;
             }
-            TakeNinesBtnCommand.RaiseCanExecuteChanged();
-            _neuner = 0;
-            foreach (var nineRoll in ActRoll)
+            TakePokerBtnCommand.RaiseCanExecuteChanged();
+            _grande = 0;
+            if (_neuner == 5 || _zehner == 5 || _buben == 5 || _damen == 5 || _koenige == 5 || _asse == 5)
             {
-                if (nineRoll.Value == 1)
-                {
-                    _neuner++;
-                }
+                _grande = RollNumber == 2 ? 100 : 50;
             }
+            TakeGrandBtnCommand.RaiseCanExecuteChanged();
+            if (!TakeNinesBtnCommand.CanExecute(null) && !TakeTensBtnCommand.CanExecute(null) &&
+                !TakeJacksBtnCommand.CanExecute(null) && !TakeQueensBtnCommand.CanExecute(null) &&
+                !TakeKingsBtnCommand.CanExecute(null) && !TakeAcesBtnCommand.CanExecute(null) &&
+                !TakeStreetBtnCommand.CanExecute(null) && !TakeFullBtnCommand.CanExecute(null) &&
+                !TakePokerBtnCommand.CanExecute(null) && !TakeGrandBtnCommand.CanExecute(null) && RollNumber==4)
+            {
+                ButtonColor = "Red";
+                Messages.Insert(0, "xxx bad luck, you have to strike out xxx");
+                com.Send("xx:"+Name);
+                _neuner = -1;
+                _zehner = -1;
+                _buben = -1;
+                _damen = -1;
+                _koenige = -1;
+                _asse = -1;
+                _strasse = -1;
+                _full = -1;
+                _poker = -1;
+                _grande = -1;
+                RefreshTakeButtons();
+            }
+        }
+
+        private void RefreshTakeButtons()
+        {
             TakeNinesBtnCommand.RaiseCanExecuteChanged();
+            TakeTensBtnCommand.RaiseCanExecuteChanged();
+            TakeJacksBtnCommand.RaiseCanExecuteChanged();
+            TakeQueensBtnCommand.RaiseCanExecuteChanged();
+            TakeKingsBtnCommand.RaiseCanExecuteChanged();
+            TakeAcesBtnCommand.RaiseCanExecuteChanged();
+            TakeStreetBtnCommand.RaiseCanExecuteChanged();
+            TakeFullBtnCommand.RaiseCanExecuteChanged();
+            TakePokerBtnCommand.RaiseCanExecuteChanged();
+            TakeGrandBtnCommand.RaiseCanExecuteChanged();
+            RollCommand.RaiseCanExecuteChanged();
         }
 
         private void StartGame()
         {
             for (int i = 1; i < 11; i++)
             {
-                //Messages.Insert(0,"--- turn" + i + " has started ---");
+                com.Send("gm:--- turn " + i + " has started ---");
+                GUIAction("gm:--- turn " + i + " has started ---");
                 foreach (Player actPlayer in PlayerList)
                 {
-                    RollNumber = 1;
                     RollFinished = false;
                     if (actPlayer == PlayerList.First())
                     {
-                        //Messages.Insert(0,"++ player " + actPlayer + " starts ++");
+                        com.Send("gm:++ player " + actPlayer + " starts ++");
+                        GUIAction("gm:++ player " + actPlayer + " starts ++");
                     } else if (actPlayer == PlayerList.Last())
                     {
-                        //Messages.Insert(0,"++ final player in this turn is " + actPlayer + " ++");
-                    } else {
-                        //Messages.Insert(0,"++ next is player " + actPlayer + " ++ ");
+                        com.Send("gm:++ final player in this turn is " + actPlayer + " ++");
+                        GUIAction("gm:++ final player in this turn is " + actPlayer + " ++");
+                    } else
+                    {
+                        com.Send("gm:++ next is " + actPlayer + " ++");
+                        GUIAction("gm:++ next is " + actPlayer + " ++");
                     }
+                    Thread.Sleep(100);
                     com.Send("ap:"+actPlayer.Name);
                     GUIAction("ap:"+actPlayer.Name);
                     while (!RollFinished)
@@ -562,6 +583,14 @@ namespace ProFer.ViewModel
                     }
                 }
             }
+            com.Send("gm:+-+-++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-");
+            Thread.Sleep(100);
+            com.Send("gm:+-+-+ the game is over, please get lost now -+-+-");
+            Thread.Sleep(100);
+            com.Send("gm:+-+-++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-");
+            GUIAction("gm:+-+-++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-");
+            GUIAction("gm:+-+-+ the game is over, please get lost now -+-+-");
+            GUIAction("gm:+-+-++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-");
         }
 
         private void RotateDice()
@@ -577,11 +606,7 @@ namespace ProFer.ViewModel
                 Thread.Sleep(1500);
             }
         }
-        private void Shuffle()
-        {
-            
-        }
-
+        
         private void GUIAction(string message)
         {
             //
@@ -610,85 +635,205 @@ namespace ProFer.ViewModel
                         }
                     } else if (message.StartsWith("nt:"))
                     {
-                        Messages.Insert(0,message.Split(':')[1] + " took " + message.Split(':')[2] + " nines, making " + int.Parse(message.Split(':')[2]) * 1 + " points");
+                        if (int.Parse(message.Split(':')[2]) == -1)
+                        {
+                            Messages.Insert(0, message.Split(':')[1] + " stroke the nines");
+                        } else
+                        {
+                            Messages.Insert(0,
+                                message.Split(':')[1] + " took " + message.Split(':')[2] + " nines, making " +
+                                int.Parse(message.Split(':')[2]) * 1 + " points");
+                        }                        
+                        
                         foreach (var actPlayer in PlayerList) 
                             if (actPlayer.Name == message.Split(':')[1]) actPlayer.Neuner = int.Parse(message.Split(':')[2]) * 1;
                         RaisePropertyChanged("PlayerList");
-                        if (isServer)
-                        {
-                            RollFinished = true;
-                        }
+                        RollFinished = true;
                     }
                     else if (message.StartsWith("tt:"))
                     {
-                        Messages.Insert(0, message.Split(':')[1] + " took " + message.Split(':')[2] + " tens, making " + int.Parse(message.Split(':')[2]) * 2 + " points");
+                        if (int.Parse(message.Split(':')[2]) == -1)
+                        {
+                            Messages.Insert(0, message.Split(':')[1] + " stroke the tens");
+                        }
+                        else
+                        {
+                            Messages.Insert(0,
+                                message.Split(':')[1] + " took " + message.Split(':')[2] + " tens, making " +
+                                int.Parse(message.Split(':')[2]) * 2 + " points");
+                        }
+
                         foreach (var actPlayer in PlayerList)
                             if (actPlayer.Name == message.Split(':')[1]) actPlayer.Zehner = int.Parse(message.Split(':')[2]) * 2;
                         RaisePropertyChanged("PlayerList");
+                        RollFinished = true;
                     }
                     else if (message.StartsWith("jt:"))
                     {
-                        Messages.Insert(0, message.Split(':')[1] + " took " + message.Split(':')[2] + " jacks, making " + int.Parse(message.Split(':')[2]) * 3 + " points");
+                        if (int.Parse(message.Split(':')[2]) == -1)
+                        {
+                            Messages.Insert(0, message.Split(':')[1] + " stroke the jacks");
+                        }
+                        else
+                        {
+                            Messages.Insert(0,
+                                message.Split(':')[1] + " took " + message.Split(':')[2] + " jacks, making " +
+                                int.Parse(message.Split(':')[2]) * 3 + " points");
+                        }
+
                         foreach (var actPlayer in PlayerList)
                             if (actPlayer.Name == message.Split(':')[1]) actPlayer.Buben = int.Parse(message.Split(':')[2]) * 3;
                         RaisePropertyChanged("PlayerList");
+                        RollFinished = true;
                     }
                     else if (message.StartsWith("qt:"))
                     {
-                        Messages.Insert(0, message.Split(':')[1] + " took " + message.Split(':')[2] + " queens, making " + int.Parse(message.Split(':')[2]) * 4 + " points");
+
+                        if (int.Parse(message.Split(':')[2]) == -1)
+                        {
+                            Messages.Insert(0, message.Split(':')[1] + " stroke the queens");
+                        }
+                        else
+                        {
+                            Messages.Insert(0,
+                                message.Split(':')[1] + " took " + message.Split(':')[2] + " queens, making " +
+                                int.Parse(message.Split(':')[2]) * 4 + " points");
+                        }
+
                         foreach (var actPlayer in PlayerList)
                             if (actPlayer.Name == message.Split(':')[1]) actPlayer.Damen = int.Parse(message.Split(':')[2]) * 4;
                         RaisePropertyChanged("PlayerList");
+                        RollFinished = true;
                     }
                     else if (message.StartsWith("kt:"))
                     {
-                        Messages.Insert(0, message.Split(':')[1] + " took " + message.Split(':')[2] + " kings, making " + int.Parse(message.Split(':')[2]) * 5 + " points");
+                        if (int.Parse(message.Split(':')[2]) == -1)
+                        {
+                            Messages.Insert(0, message.Split(':')[1] + " stroke the kings");
+                        }
+                        else
+                        {
+                            Messages.Insert(0,
+                                message.Split(':')[1] + " took " + message.Split(':')[2] + " kings, making " +
+                                int.Parse(message.Split(':')[2]) * 5 + " points");
+                        }
+
                         foreach (var actPlayer in PlayerList)
                             if (actPlayer.Name == message.Split(':')[1]) actPlayer.Koenige = int.Parse(message.Split(':')[2]) * 5;
                         RaisePropertyChanged("PlayerList");
+                        RollFinished = true;
                     }
                     else if (message.StartsWith("at:"))
                     {
-                        Messages.Insert(0, message.Split(':')[1] + " took " + message.Split(':')[2] + " aces, making " + int.Parse(message.Split(':')[2]) * 6 + " points");
+                        if (int.Parse(message.Split(':')[2]) == -1)
+                        {
+                            Messages.Insert(0, message.Split(':')[1] + " stroke the aces");
+                        }
+                        else
+                        {
+                            Messages.Insert(0,
+                                message.Split(':')[1] + " took " + message.Split(':')[2] + " aces, making " +
+                                int.Parse(message.Split(':')[2]) * 6 + " points");
+                        }
+
                         foreach (var actPlayer in PlayerList)
                             if (actPlayer.Name == message.Split(':')[1]) actPlayer.Asse = int.Parse(message.Split(':')[2]) * 6;
                         RaisePropertyChanged("PlayerList");
+                        RollFinished = true;
                     }
                     else if (message.StartsWith("st:"))
                     {
-                        Messages.Insert(0, message.Split(':')[1] + " took " + message.Split(':')[2] + " nines, making " + int.Parse(message.Split(':')[2]) * 1 + " points");
+
+                        if (int.Parse(message.Split(':')[2]) == -1)
+                        {
+                            Messages.Insert(0, message.Split(':')[1] + " stroke the street");
+                        }
+                        else
+                        {
+                            Messages.Insert(0,
+                                message.Split(':')[1] + " took a street, making " + int.Parse(message.Split(':')[2]) +
+                                " points");
+                        }
+
                         foreach (var actPlayer in PlayerList)
-                            if (actPlayer.Name == message.Split(':')[1]) actPlayer.Neuner = int.Parse(message.Split(':')[2]) * 1;
+                            if (actPlayer.Name == message.Split(':')[1]) actPlayer.Strasse = int.Parse(message.Split(':')[2]);
                         RaisePropertyChanged("PlayerList");
+                        RollFinished = true;
                     }
                     else if (message.StartsWith("ft:"))
                     {
-                        Messages.Insert(0, message.Split(':')[1] + " took " + message.Split(':')[2] + " nines, making " + int.Parse(message.Split(':')[2]) * 1 + " points");
+                        if (int.Parse(message.Split(':')[2]) == -1)
+                        {
+                            Messages.Insert(0, message.Split(':')[1] + " stroke the full");
+                        }
+                        else
+                        {
+                            Messages.Insert(0,
+                                message.Split(':')[1] + " took a full, making " + int.Parse(message.Split(':')[2]) +
+                                " points");
+                        }
+
                         foreach (var actPlayer in PlayerList)
-                            if (actPlayer.Name == message.Split(':')[1]) actPlayer.Neuner = int.Parse(message.Split(':')[2]) * 1;
+                            if (actPlayer.Name == message.Split(':')[1]) actPlayer.Full = int.Parse(message.Split(':')[2]);
                         RaisePropertyChanged("PlayerList");
+                        RollFinished = true;
                     }
                     else if (message.StartsWith("pt:"))
                     {
-                        Messages.Insert(0, message.Split(':')[1] + " took " + message.Split(':')[2] + " nines, making " + int.Parse(message.Split(':')[2]) * 1 + " points");
+                        if (int.Parse(message.Split(':')[2]) == -1)
+                        {
+                            Messages.Insert(0, message.Split(':')[1] + " stroke the poker");
+                        }
+                        else
+                        {
+                            Messages.Insert(0,
+                                message.Split(':')[1] + " took a poker, making " + int.Parse(message.Split(':')[2]) +
+                                " points");
+                        }
+
                         foreach (var actPlayer in PlayerList)
-                            if (actPlayer.Name == message.Split(':')[1]) actPlayer.Neuner = int.Parse(message.Split(':')[2]) * 1;
+                            if (actPlayer.Name == message.Split(':')[1]) actPlayer.Poker = int.Parse(message.Split(':')[2]);
                         RaisePropertyChanged("PlayerList");
+                        RollFinished = true;
                     }
                     else if (message.StartsWith("gt:"))
                     {
-                        Messages.Insert(0, message.Split(':')[1] + " took " + message.Split(':')[2] + " nines, making " + int.Parse(message.Split(':')[2]) * 1 + " points");
+
+                        if (int.Parse(message.Split(':')[2]) == -1)
+                        {
+                            Messages.Insert(0, message.Split(':')[1] + " stroke the grand");
+                        }
+                        else
+                        {
+                            Messages.Insert(0,
+                                message.Split(':')[1] + " took the grand, watch out! making " +
+                                int.Parse(message.Split(':')[2]) + " points");
+                        }
+
                         foreach (var actPlayer in PlayerList)
-                            if (actPlayer.Name == message.Split(':')[1]) actPlayer.Neuner = int.Parse(message.Split(':')[2]) * 1;
+                            if (actPlayer.Name == message.Split(':')[1]) actPlayer.Grande = int.Parse(message.Split(':')[2]);
                         RaisePropertyChanged("PlayerList");
+                        RollFinished = true;
                     }
                     else if (message.StartsWith("ap:"))
                     {
                         ActPlayer = message.Split(':')[1];
                         RollCommand.RaiseCanExecuteChanged();
-                        Messages.Insert(0,ActPlayer);
                     }
-                    Messages.Insert(0,message);
+                    else if (message.StartsWith("xx:"))
+                    {
+                        Messages.Insert(0, "xxx " + message.Split(':')[1] + " got bad luck and has to strike out something xxx");
+                    }
+                    else if (message.StartsWith("gm:"))
+                    {
+                        Messages.Insert(0, message.Split(':')[1]);
+                        RollNumber = 1;
+                        RollCommand.RaiseCanExecuteChanged();
+                    }
+                    else if (message.StartsWith("rm:"))
+                    {
+                        Messages.Insert(0, message.Split(':')[1]);
+                    }
                 });
         }
     }

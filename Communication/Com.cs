@@ -58,11 +58,20 @@ namespace ProFer.Communication
             string message = "";
             while (!message.Contains("@quit"))
             {
-                int length = clientSocket.Receive(buffer);
-                message = Encoding.UTF8.GetString(buffer, 0, length);
-                //inform GUI via delegate
-                GUIAction(message);
-                message = "";
+                try
+                {
+
+                    int length = clientSocket.Receive(buffer);
+                    message = Encoding.UTF8.GetString(buffer, 0, length);
+                    //inform GUI via delegate
+                    GUIAction(message);
+                    message = "";
+                }
+                catch (SocketException e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
             }
             clientSocket.Close();
         }
@@ -78,7 +87,15 @@ namespace ProFer.Communication
             clients = new List<ClientHandler>();
             while (acceptingThread.IsAlive)
             {
-                clients.Add(new ClientHandler(serverSocket.Accept(), new Action<string, Socket>(NewMessageReceived)));
+                try
+                {
+                    clients.Add(new ClientHandler(serverSocket.Accept(), new Action<string, Socket>(NewMessageReceived)));
+                }
+                catch (SocketException e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
                 foreach (Player actPlayer in players)
                 {
                     string msg = "";
