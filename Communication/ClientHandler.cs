@@ -49,7 +49,8 @@ namespace ProFer.Communication
                 catch (SocketException e)
                 {
                     Console.WriteLine(e);
-                    throw;
+                    action("=== rm:Player " + Name + " left ===",Clientsocket);
+                    Clientsocket.Close(1);
                 }
             }
             Close();

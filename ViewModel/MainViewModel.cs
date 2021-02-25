@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -107,6 +108,12 @@ namespace ProFer.ViewModel
         {
             get { return _name; }
             set { _name = value; ActAsClientBtnCommand.RaiseCanExecuteChanged(); ActAsServerBtnCommand.RaiseCanExecuteChanged();}
+        }
+        private string _ipport = "127.0.0.1:9090";
+        public string IPPort
+        {
+            get { return _ipport; }
+            set { _ipport = value; ActAsClientBtnCommand.RaiseCanExecuteChanged(); ActAsServerBtnCommand.RaiseCanExecuteChanged(); }
         }
         private string _buttonColor = "SteelBlue";
         public string ButtonColor
@@ -323,7 +330,7 @@ namespace ProFer.ViewModel
             ActAsServerBtnCommand = new RelayCommand(
                 () =>
                 {
-                    com = new Com(true, GUIAction, PlayerList);
+                    com = new Com(true, GUIAction, PlayerList, GameStarted, IPPort);
                     isConnected = true;
                     isServer = true;
 
@@ -339,14 +346,14 @@ namespace ProFer.ViewModel
                     Messages.Insert(0,"Welcome Player " + Name + " (Server). You can start the game whenever you wish.");
                     Task.Factory.StartNew(RotateDice);
 
-                }, () => !isConnected && !string.IsNullOrWhiteSpace(_name));
+                }, () => !isConnected && !string.IsNullOrWhiteSpace(_name) && !string.IsNullOrWhiteSpace(_ipport));
 
             ActAsClientBtnCommand = new RelayCommand(
                 () =>
                 {
                     try
                     {
-                        com = new Com(false, GUIAction, null);
+                        com = new Com(false, GUIAction, null, GameStarted, IPPort);
                         isConnected = true;
 
                         Self = new Player(Name);
@@ -363,7 +370,7 @@ namespace ProFer.ViewModel
                     {
                         Messages.Insert(0,"The computer at " + e.Message.Substring(e.Message.LastIndexOf('[')) + " said no");
                     }
-                }, () => !isConnected && !string.IsNullOrWhiteSpace(_name));
+                }, () => !isConnected && !string.IsNullOrWhiteSpace(_name) && !string.IsNullOrWhiteSpace(_ipport));
 
             StartGameCommand = new RelayCommand(
                 () =>

@@ -7,6 +7,7 @@
         DataContext="{Binding Main, Source={StaticResource Locator}}"
         Title="Meskalero" Height="730" Width="900" Icon="/img/ace.png" ResizeMode="CanMinimize" >
 
+    <!--#region Templates and Resources -->
     <Window.Resources>
         <Style x:Key="RoundedButton" TargetType="Button">
             <Setter Property="Background" Value="{Binding ButtonColor}"/>
@@ -17,8 +18,154 @@
             <Setter Property="FontFamily" Value="Comic Sans MS"/>
             <Setter Property="Foreground" Value="White"/>
         </Style>
-
+        <Style x:Key="ScoreDisplay" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="Height" Value="17"/>
+            <Setter Property="Margin" Value="15,5"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="DisplayNines" TargetType="TextBlock" BasedOn="{StaticResource ScoreDisplay}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Neuner}" Value="-1">
+                    <Setter Property="Background" Value="Red"></Setter>
+                    <Setter Property="Foreground" Value="Red"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Neuner}" Value="5">
+                    <Setter Property="Background" Value="LightGreen"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Neuner}" Value="0">
+                    <Setter Property="Foreground" Value="White"></Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DisplayTens" TargetType="TextBlock" BasedOn="{StaticResource ScoreDisplay}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Zehner}" Value="-2">
+                    <Setter Property="Background" Value="Red"></Setter>
+                    <Setter Property="Foreground" Value="Red"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Zehner}" Value="10">
+                    <Setter Property="Background" Value="LightGreen"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Zehner}" Value="0">
+                    <Setter Property="Foreground" Value="White"></Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DisplayJacks" TargetType="TextBlock" BasedOn="{StaticResource ScoreDisplay}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Buben}" Value="-3">
+                    <Setter Property="Background" Value="Red"></Setter>
+                    <Setter Property="Foreground" Value="Red"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Buben}" Value="15">
+                    <Setter Property="Background" Value="LightGreen"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Buben}" Value="0">
+                    <Setter Property="Foreground" Value="White"></Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DisplayQueens" TargetType="TextBlock" BasedOn="{StaticResource ScoreDisplay}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Damen}" Value="-4">
+                    <Setter Property="Background" Value="Red"></Setter>
+                    <Setter Property="Foreground" Value="Red"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Damen}" Value="16">
+                    <Setter Property="Background" Value="LightGreen"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Damen}" Value="0">
+                    <Setter Property="Foreground" Value="White"></Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DisplayKings" TargetType="TextBlock" BasedOn="{StaticResource ScoreDisplay}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Koenige}" Value="-5">
+                    <Setter Property="Background" Value="Red"></Setter>
+                    <Setter Property="Foreground" Value="Red"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Koenige}" Value="25">
+                    <Setter Property="Background" Value="LightGreen"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Koenige}" Value="0">
+                    <Setter Property="Foreground" Value="White"></Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DisplayAces" TargetType="TextBlock" BasedOn="{StaticResource ScoreDisplay}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Asse}" Value="-6">
+                    <Setter Property="Background" Value="Red"></Setter>
+                    <Setter Property="Foreground" Value="Red"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Asse}" Value="30">
+                    <Setter Property="Background" Value="LightGreen"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Asse}" Value="0">
+                    <Setter Property="Foreground" Value="White"></Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DisplayStreet" TargetType="TextBlock" BasedOn="{StaticResource ScoreDisplay}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Strasse}" Value="-1">
+                    <Setter Property="Background" Value="Red"></Setter>
+                    <Setter Property="Foreground" Value="Red"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Strasse}" Value="25">
+                    <Setter Property="Background" Value="LightGreen"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Strasse}" Value="0">
+                    <Setter Property="Foreground" Value="White"></Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DisplayFull" TargetType="TextBlock" BasedOn="{StaticResource ScoreDisplay}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Full}" Value="-1">
+                    <Setter Property="Background" Value="Red"></Setter>
+                    <Setter Property="Foreground" Value="Red"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Full}" Value="35">
+                    <Setter Property="Background" Value="LightGreen"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Full}" Value="0">
+                    <Setter Property="Foreground" Value="White"></Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DisplayPoker" TargetType="TextBlock" BasedOn="{StaticResource ScoreDisplay}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Poker}" Value="-1">
+                    <Setter Property="Background" Value="Red"></Setter>
+                    <Setter Property="Foreground" Value="Red"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Poker}" Value="45">
+                    <Setter Property="Background" Value="LightGreen"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Poker}" Value="0">
+                    <Setter Property="Foreground" Value="White"></Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DisplayGrand" TargetType="TextBlock" BasedOn="{StaticResource ScoreDisplay}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Grande}" Value="-1">
+                    <Setter Property="Background" Value="Red"></Setter>
+                    <Setter Property="Foreground" Value="Red"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Grande}" Value="100">
+                    <Setter Property="Background" Value="LightGreen"></Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Grande}" Value="0">
+                    <Setter Property="Foreground" Value="White"></Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
+
     <Window.Background>
         <LinearGradientBrush EndPoint="0.5,0.8" StartPoint="0.5,0">
             <GradientStop Color="White" Offset="1"/>
@@ -26,6 +173,7 @@
             <GradientStop Color="LightSteelBlue" Offset="0.51"/>
         </LinearGradientBrush>
     </Window.Background>
+    <!--#endregion-->
 
     <Grid>
         <Grid.RowDefinitions>
@@ -35,28 +183,33 @@
         </Grid.RowDefinitions>
 
         <!--#region Client/Server buttons -->
-        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,10,0">
-            <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="30,0,0,0">
+        <StackPanel Orientation="Horizontal" Grid.Row="0" >
+            <StackPanel Width="300" Orientation="Vertical" Margin="30,5,0,0">
                 <Label Content="Name" FontWeight="Bold"/>
-                <TextBox Width="500" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding NameVisibility, Mode=OneWay}"/>
+                <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding NameVisibility, Mode=OneWay}"/>
             </StackPanel>
-            <Button Content="Connect" HorizontalAlignment="Right" Command="{Binding ActAsClientBtnCommand}" Width="100" Style="{StaticResource RoundedButton}"
-                    Margin="20,0,20,0">
-                <Button.Resources>
-                    <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="10"/>
-                    </Style>
-                </Button.Resources>
-            </Button>
-            <Button Content="Act as Server" HorizontalAlignment="Right" Command="{Binding ActAsServerBtnCommand}" Width="100" Style="{StaticResource RoundedButton}"
-                     Margin="0,0,20,0">
-                <Button.Resources>
-                    <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="10"/>
-                    </Style>
-                </Button.Resources>
-            </Button>
-        </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Act as Server" Command="{Binding ActAsServerBtnCommand}" Width="100" Style="{StaticResource RoundedButton}" Margin="40,0,10,0">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="10"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+                <TextBlock VerticalAlignment="Center" Text="or" Margin="0,0,0,3"></TextBlock>
+                <Button Content="Connect" HorizontalAlignment="Right" Command="{Binding ActAsClientBtnCommand}" Width="100" Style="{StaticResource RoundedButton}" Margin="10,0,10,0">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="10"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+                <TextBlock VerticalAlignment="Center" Text="to" Margin="0,0,0,3"></TextBlock>
+                <StackPanel Width="110" Orientation="Vertical" Margin="10,5,0,0">
+                    <Label Content="IP:Port" FontWeight="Bold" HorizontalContentAlignment="Right"></Label>
+                    <TextBox Text="{Binding IPPort, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding NameVisibility, Mode=OneWay}" HorizontalContentAlignment="Right" Margin="5,0,0,0"/>
+                </StackPanel>
+            </StackPanel></StackPanel>
         <!--#endregion-->
 
         <!--#region Player-Output  -->
@@ -65,25 +218,19 @@
                 <Label Content="Players" FontWeight="Bold"></Label>
                 <ListBox Height="240" ItemsSource="{Binding PlayerList}" SelectedItem="{Binding SelectedUser}" Margin="0,0,0,15" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button Content="Start" Command="{Binding StartGameCommand}" Margin="0,0,10,0">
+                    <Button Style="{StaticResource ResourceKey=RoundedButton}" Content="Start" Command="{Binding StartGameCommand}" Margin="0,0,10,0">
                         <Button.Resources>
                             <Style TargetType="{x:Type Border}">
                                 <Setter Property="CornerRadius" Value="10"/>
                             </Style>
                         </Button.Resources>
-                        <Button.Style>
-                            <StaticResource ResourceKey="RoundedButton"/>
-                        </Button.Style>
                     </Button>
-                    <Button Content="Kick" Command="{Binding DropClientBtnCommand}">
+                    <Button Style="{StaticResource ResourceKey=RoundedButton}" Content="Kick" Command="{Binding DropClientBtnCommand}">
                         <Button.Resources>
                             <Style TargetType="{x:Type Border}">
                                 <Setter Property="CornerRadius" Value="10"/>
                             </Style>
                         </Button.Resources>
-                        <Button.Style>
-                            <StaticResource ResourceKey="RoundedButton"/>
-                        </Button.Style>
                     </Button>
                 </StackPanel>
             </StackPanel>
@@ -185,186 +332,16 @@
                         <DataTemplate>
                             <StackPanel Orientation="Vertical" Width="75" Background="White" Opacity="0.8">
                                 <Label Content="{Binding Name}" VerticalAlignment="Center" HorizontalContentAlignment="Center" Margin="5,0" FontFamily="Comic Sans MS" FontWeight="Bold"/>
-                                <TextBlock Height="17" Text="{Binding Neuner}" Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Neuner}" Value="-1">
-                                                    <Setter Property="Background" Value="Red"></Setter>
-                                                    <Setter Property="Foreground" Value="Red"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Neuner}" Value="5">
-                                                    <Setter Property="Background" Value="LightGreen"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Neuner}" Value="0">
-                                                    <Setter Property="Foreground" Value="White"></Setter>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                                <TextBlock Height="17" Text="{Binding Zehner}" Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS" >
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Zehner}" Value="-2">
-                                                    <Setter Property="Background" Value="Red"></Setter>
-                                                    <Setter Property="Foreground" Value="Red"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Zehner}" Value="10">
-                                                    <Setter Property="Background" Value="LightGreen"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Zehner}" Value="0">
-                                                    <Setter Property="Foreground" Value="White"></Setter>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                                <TextBlock Height="17" Text="{Binding Buben}" Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Buben}" Value="-3">
-                                                    <Setter Property="Background" Value="Red"></Setter>
-                                                    <Setter Property="Foreground" Value="Red"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Buben}" Value="15">
-                                                    <Setter Property="Background" Value="LightGreen"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Buben}" Value="0">
-                                                    <Setter Property="Foreground" Value="White"></Setter>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                                <TextBlock Height="17" Text="{Binding Damen}" Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS" >
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Damen}" Value="-4">
-                                                    <Setter Property="Background" Value="Red"></Setter>
-                                                    <Setter Property="Foreground" Value="Red"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Damen}" Value="20">
-                                                    <Setter Property="Background" Value="LightGreen"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Damen}" Value="0">
-                                                    <Setter Property="Foreground" Value="White"></Setter>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                                <TextBlock Height="17" Text="{Binding Koenige}" Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS" >
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Koenige}" Value="-5">
-                                                    <Setter Property="Background" Value="Red"></Setter>
-                                                    <Setter Property="Foreground" Value="Red"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Koenige}" Value="25">
-                                                    <Setter Property="Background" Value="LightGreen"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Koenige}" Value="0">
-                                                    <Setter Property="Foreground" Value="White"></Setter>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                                <TextBlock Height="17" Text="{Binding Asse}" Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS" >
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Asse}" Value="-6">
-                                                    <Setter Property="Background" Value="Red"></Setter>
-                                                    <Setter Property="Foreground" Value="Red"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Asse}" Value="30">
-                                                    <Setter Property="Background" Value="LightGreen"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Asse}" Value="0">
-                                                    <Setter Property="Foreground" Value="White"></Setter>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                                <TextBlock Height="17" Text="{Binding Strasse}"  Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Strasse}" Value="-1">
-                                                    <Setter Property="Background" Value="Red"></Setter>
-                                                    <Setter Property="Foreground" Value="Red"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Strasse}" Value="25">
-                                                    <Setter Property="Background" Value="LightGreen"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Strasse}" Value="0">
-                                                    <Setter Property="Foreground" Value="White"></Setter>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                                <TextBlock Height="17" Text="{Binding Full}"  Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Full}" Value="-1">
-                                                    <Setter Property="Background" Value="Red"></Setter>
-                                                    <Setter Property="Foreground" Value="Red"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Full}" Value="35">
-                                                    <Setter Property="Background" Value="LightGreen"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Full}" Value="0">
-                                                    <Setter Property="Foreground" Value="White"></Setter>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                                <TextBlock Height="17" Text="{Binding Poker}"  Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Poker}" Value="-1">
-                                                    <Setter Property="Background" Value="Red"></Setter>
-                                                    <Setter Property="Foreground" Value="Red"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Poker}" Value="45">
-                                                    <Setter Property="Background" Value="LightGreen"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Poker}" Value="0">
-                                                    <Setter Property="Foreground" Value="White"></Setter>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                                <TextBlock Height="17" Text="{Binding Grande}"  Margin="15,5" TextAlignment="Center" FontFamily="Comic Sans MS">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Grande}" Value="-1">
-                                                    <Setter Property="Background" Value="Red"></Setter>
-                                                    <Setter Property="Foreground" Value="Red"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Grande}" Value="100">
-                                                    <Setter Property="Background" Value="LightGreen"></Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Grande}" Value="0">
-                                                    <Setter Property="Foreground" Value="White"></Setter>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
+                                <TextBlock Text="{Binding Neuner}" Style="{StaticResource DisplayNines}"></TextBlock>
+                                <TextBlock Text="{Binding Zehner}" Style="{StaticResource DisplayTens}"></TextBlock>
+                                <TextBlock Text="{Binding Buben}" Style="{StaticResource DisplayJacks}"></TextBlock>
+                                <TextBlock Text="{Binding Damen}" Style="{StaticResource DisplayQueens}"></TextBlock>
+                                <TextBlock Text="{Binding Koenige}" Style="{StaticResource DisplayKings}"></TextBlock>
+                                <TextBlock Text="{Binding Asse}" Style="{StaticResource DisplayAces}"></TextBlock>
+                                <TextBlock Text="{Binding Strasse}" Style="{StaticResource DisplayStreet}"></TextBlock>
+                                <TextBlock Text="{Binding Full}" Style="{StaticResource DisplayFull}"></TextBlock>
+                                <TextBlock Text="{Binding Poker}" Style="{StaticResource DisplayPoker}"></TextBlock>
+                                <TextBlock Text="{Binding Grande}" Style="{StaticResource DisplayGrand}"></TextBlock>
                                 <Label BorderThickness="0,2,0,0" BorderBrush="Black" Content="{Binding SumRolls}" VerticalAlignment="Center" Margin="5,5" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
                             </StackPanel>
 

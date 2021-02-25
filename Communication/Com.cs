@@ -17,31 +17,35 @@ namespace ProFer.Communication
         
         Socket serverSocket;
         Socket clientSocket;
-        const int port = 9090;
+        int port;
+        IPAddress ip;
         byte[] buffer = new byte[512];
         public Action<string> GUIAction;
         Thread acceptingThread;
         List<ClientHandler> clients;
         ObservableCollection<Player> players;
+        private bool gameStarted;
 
-        public Com(bool isServer, Action<string> action, ObservableCollection<Player> playerList)
+        public Com(bool isServer, Action<string> action, ObservableCollection<Player> playerList, bool gameStarted, string ipPort)
         {
             this.GUIAction = action;
+            port = int.Parse(ipPort.Split(':')[1]);
 
             if (isServer)
             {
                 serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                serverSocket.Bind(new IPEndPoint(IPAddress.Loopback, port));
+                serverSocket.Bind(new IPEndPoint(IPAddress.Any, port));
                 serverSocket.Listen(5);
                 Task.Factory.StartNew(StartAccepting);
                 this.players = playerList;
+                this.gameStarted = gameStarted;
             }
             else
             {
                 TcpClient client = new TcpClient();
                 try
                 {
-                    client.Connect(new IPEndPoint(IPAddress.Loopback, port));
+                    client.Connect(new IPEndPoint(IPAddress.Parse(ipPort.Split(':')[0]), port));
                 }
                 catch (SocketException e)
                 {
@@ -85,22 +89,22 @@ namespace ProFer.Communication
         private void Accept()
         {
             clients = new List<ClientHandler>();
-            while (acceptingThread.IsAlive)
+            while (acceptingThread.IsAlive && !gameStarted)
             {
                 try
                 {
                     clients.Add(new ClientHandler(serverSocket.Accept(), new Action<string, Socket>(NewMessageReceived)));
+                    foreach (Player actPlayer in players)
+                    {
+                        string msg = "";
+                        msg = "np:" + actPlayer.Name;
+                        clients.Last().Send(msg);
+                    }
                 }
                 catch (SocketException e)
                 {
                     Console.WriteLine(e);
                     throw;
-                }
-                foreach (Player actPlayer in players)
-                {
-                    string msg = "";
-                    msg = "np:" + actPlayer.Name;
-                    clients.Last().Send(msg);
                 }
             }
         }
