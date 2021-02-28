@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -97,16 +96,13 @@ namespace ProFer.ViewModel
         #endregion
 
         #region gui commands/params
-        private int _rollNumber = 1;
+
         public int RollNumber
-        {
-            get => _rollNumber;
-            private set { _rollNumber = value; }//RollCommand.RaiseCanExecuteChanged(); }
-        }
+        {get; private set;} = 1;
         private string _name = "";
         public string Name
         {
-            get { return _name; }
+            get => _name;
             set { _name = value; ActAsClientBtnCommand.RaiseCanExecuteChanged(); ActAsServerBtnCommand.RaiseCanExecuteChanged();}
         }
         private string _ipport = "127.0.0.1:9090";
@@ -133,12 +129,15 @@ namespace ProFer.ViewModel
             get => _selectedUser;
             set { Set(ref _selectedUser, value); DropClientBtnCommand.RaiseCanExecuteChanged();}
         }
-        private string _gameControlVisibility = "Visible";
         public string GameControlVisibility
         {
-            get => _gameControlVisibility;
-            set { _gameControlVisibility = value; RaisePropertyChanged(); }
+            get
+            {
+                if (RollCommand.CanExecute(null)) return "True";
+                else return "False";
+            }
         }
+
         private string _nameVisibility = "True";
         public string NameVisibility
         {
@@ -437,8 +436,9 @@ namespace ProFer.ViewModel
                     com.Send("rm:" + sendRoll + sendSelected);
                     CalculateRoll();
                     RollCommand.RaiseCanExecuteChanged();
+                    RaisePropertyChanged("GameControlVisibility");
                 },
-                () => { return (GameControlVisibility == "Visible" && RollNumber <= 3 && ActPlayer==Name); });
+                () => RollNumber <= 3 && ActPlayer==Name);
         }
 
         private void CalculateRoll()
@@ -557,14 +557,15 @@ namespace ProFer.ViewModel
             TakePokerBtnCommand.RaiseCanExecuteChanged();
             TakeGrandBtnCommand.RaiseCanExecuteChanged();
             RollCommand.RaiseCanExecuteChanged();
+            RaisePropertyChanged("GameControlVisibility");
         }
 
         private void StartGame()
         {
             for (int i = 1; i < 11; i++)
             {
-                com.Send("gm:--- turn " + i + " has started ---");
-                GUIAction("gm:--- turn " + i + " has started ---");
+                com.Send("gm:--- turn " + i + " ---");
+                GUIAction("gm:--- turn " + i + " ---");
                 foreach (Player actPlayer in PlayerList)
                 {
                     RollFinished = false;

@@ -209,7 +209,8 @@
                     <Label Content="IP:Port" FontWeight="Bold" HorizontalContentAlignment="Right"></Label>
                     <TextBox Text="{Binding IPPort, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding NameVisibility, Mode=OneWay}" HorizontalContentAlignment="Right" Margin="5,0,0,0"/>
                 </StackPanel>
-            </StackPanel></StackPanel>
+            </StackPanel>
+        </StackPanel>
         <!--#endregion-->
 
         <!--#region Player-Output  -->
@@ -247,20 +248,20 @@
                     <ColumnDefinition Width="5*"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Orientation="Vertical" Margin="25,36,5,10">
-                <Button Content="Nines" Command="{Binding TakeNinesBtnCommand}" Width="70" Style="{StaticResource RoundedButton}" HorizontalAlignment="Right">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="10"/>
-                        </Style>
-                    </Button.Resources>
-                </Button>
+                    <Button Content="Nines" Command="{Binding TakeNinesBtnCommand}" Width="70" Style="{StaticResource RoundedButton}" HorizontalAlignment="Right">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="10"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
                     <Button Content="Tens" Command="{Binding TakeTensBtnCommand}" Width="70" Style="{StaticResource RoundedButton}" HorizontalAlignment="Right">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="10"/>
-                        </Style>
-                    </Button.Resources>
-                </Button>
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="10"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
                     <Button Content="Jacks" Command="{Binding TakeJacksBtnCommand}" Width="70" Style="{StaticResource RoundedButton}" HorizontalAlignment="Right">
                         <Button.Resources>
                             <Style TargetType="Border">
@@ -359,7 +360,7 @@
         <!--#endregion-->
 
         <!--#region dice display  -->
-        <ListBox ItemsSource="{Binding SelectableRoll, NotifyOnSourceUpdated=True}" Margin="45,15,0,15" Grid.Row="2" HorizontalAlignment="Left" SelectionMode="Multiple" SelectedItem="{Binding Path=RollSelectedItem,UpdateSourceTrigger=PropertyChanged}" IsSynchronizedWithCurrentItem="True">
+        <ListBox ItemsSource="{Binding SelectableRoll, NotifyOnSourceUpdated=True}" Margin="45,15,0,15" Grid.Row="2" HorizontalAlignment="Left" SelectionMode="Multiple" SelectedItem="{Binding Path=RollSelectedItem,UpdateSourceTrigger=PropertyChanged}" IsSynchronizedWithCurrentItem="True" IsEnabled="{Binding GameControlVisibility}">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <StackPanel Orientation="Horizontal"/>
