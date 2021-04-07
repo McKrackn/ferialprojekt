@@ -1,15 +1,14 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using DicePokerMQ.Communication;
+using DicePokerMQ.Model;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
-using ProFer.Communication;
-using ProFer.Model;
 
-namespace ProFer.ViewModel
+namespace DicePokerMQ.ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
@@ -109,7 +108,7 @@ namespace ProFer.ViewModel
             get { return _name; }
             set { _name = value; ActAsClientBtnCommand.RaiseCanExecuteChanged(); ActAsServerBtnCommand.RaiseCanExecuteChanged();}
         }
-        private string _ipport = "127.0.0.1:9090";
+        private string _ipport = "localhost:61616";
         public string IPPort
         {
             get { return _ipport; }
@@ -206,6 +205,7 @@ namespace ProFer.ViewModel
                 ActRoll[i].IsSelected = false;
             }
 
+            #region TakeButtonCommands
             TakeNinesBtnCommand = new RelayCommand(
                 () =>
                 {
@@ -326,6 +326,7 @@ namespace ProFer.ViewModel
                     RollFinished = true;
                 },
                 () => (RollNumber > 1 && Grande > 0 && PlayerList[0].Grande == 0 && RollNumber <= 4) || (ButtonColor == "Red" && PlayerList[0].Grande == 0));
+            #endregion
 
             ActAsServerBtnCommand = new RelayCommand(
                 () =>
@@ -363,7 +364,7 @@ namespace ProFer.ViewModel
                         ActAsServerBtnCommand.RaiseCanExecuteChanged();
                         NameVisibility = "false";
                         Messages.Insert(0,"Welcome Player " + Name + ". Please wait until the host starts the game..");
-                        com.Send("np:" + Name);
+                        //com.Send("np:" + Name);
                         Task.Factory.StartNew(RotateDice);
                     }
                     catch (SocketException e)

@@ -1,34 +1,32 @@
-﻿
-using System;
+﻿using System;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using Apache.NMS;
 
-namespace ProFer.Communication
+namespace DicePokerMQ.Communication
 {
     internal class ClientHandler
     {
-        private Action<string, Socket> action;
-        private byte[] buffer = new byte[512];
         private Thread clientReceiveThread;
         const string endMessage = "@quit";
         public string Name { get; private set; }
+        private ISession session;
+        private IMessageProducer producer;
 
-        public Socket Clientsocket
+        public ClientHandler(string playerName, ISession session)
         {
-            get;
-            private set;
+            this.Name = playerName;
+            this.session = session;
+
+            IDestination personalProducerQueue = session.GetQueue("DicePoker." + this.Name);
+            producer = session.CreateProducer(personalProducerQueue);
+
+            //clientReceiveThread = new Thread(Receive);
+            //clientReceiveThread.Start();
         }
 
-        public ClientHandler(Socket socket, Action<string, Socket> action)
-        {
-            this.Clientsocket = socket;
-            this.action = action;
-            clientReceiveThread = new Thread(Receive);
-            clientReceiveThread.Start();
-        }
-
-        private void Receive()
+        /*private void Receive()
         {
             string message = "";
             while (!message.Contains(endMessage))
@@ -43,30 +41,30 @@ namespace ProFer.Communication
                         Name = message.Split("np:")[1];
                     }
                     //inform GUI via delegate
-                    action(message, Clientsocket);
+                    action(message);
                     message = "";
                 }
                 catch (SocketException e)
                 {
                     Console.WriteLine(e);
-                    action("=== rm:Player " + Name + " left ===",Clientsocket);
+                    action("=== rm:Player " + Name + " left ===");
                     Clientsocket.Close(1);
                 }
             }
             Close();
-        }
+        }*/
 
         public void Send(string message)
         {
-            Clientsocket.Send(Encoding.UTF8.GetBytes(message));
-            message = "";
+            var objectMessage = producer.CreateObjectMessage(message);
+            producer.Send(objectMessage);
         }
 
         public void Close()
         {
             Send(endMessage); //sends endmessage to client 
-            Clientsocket.Close(1); //disconnects
-            clientReceiveThread.Abort(); //abort client threads
+            //Clientsocket.Close(1); //disconnects
+            //clientReceiveThread.Abort(); //abort client threads
         }
     }
 }

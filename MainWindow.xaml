@@ -1,11 +1,11 @@
-﻿<Window x:Class="ProFer.MainWindow"
+﻿<Window x:Class="DicePokerMQ.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         DataContext="{Binding Main, Source={StaticResource Locator}}"
-        Title="Meskalero" Height="730" Width="900" Icon="/img/ace.png" ResizeMode="CanMinimize" >
+        Title="Meskalero - MessageQueue Edition" Height="730" Width="900" Icon="/img/ace.png" ResizeMode="CanMinimize" >
 
     <!--#region Templates and Resources -->
     <Window.Resources>
@@ -206,7 +206,7 @@
                 </Button>
                 <TextBlock VerticalAlignment="Center" Text="to" Margin="0,0,0,3"></TextBlock>
                 <StackPanel Width="110" Orientation="Vertical" Margin="10,5,0,0">
-                    <Label Content="IP:Port" FontWeight="Bold" HorizontalContentAlignment="Right"></Label>
+                    <Label Content="ActiveMQ at" FontWeight="Bold" HorizontalContentAlignment="Right"></Label>
                     <TextBox Text="{Binding IPPort, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding NameVisibility, Mode=OneWay}" HorizontalContentAlignment="Right" Margin="5,0,0,0"/>
                 </StackPanel>
             </StackPanel></StackPanel>

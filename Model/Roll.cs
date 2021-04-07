@@ -2,7 +2,7 @@
 using System.Windows.Media.Imaging;
 using GalaSoft.MvvmLight;
 
-namespace ProFer.Model
+namespace DicePokerMQ.Model
 {
     public class Roll : ViewModelBase
     {

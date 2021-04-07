@@ -1,7 +1,6 @@
-﻿using System.Collections.ObjectModel;
-using GalaSoft.MvvmLight;
+﻿using GalaSoft.MvvmLight;
 
-namespace ProFer.Model
+namespace DicePokerMQ.Model
 {
     public class Player : ViewModelBase
     {

@@ -1,25 +1,21 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
+// using System.Net;
+// using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using ProFer.Model;
+using Apache.NMS;
+using Apache.NMS.ActiveMQ;
+using DicePokerMQ.Model;
 
-namespace ProFer.Communication
+namespace DicePokerMQ.Communication
 {
-    public class Com
+    public class Com : ICom
     {
-        
-        Socket serverSocket;
-        Socket clientSocket;
-        int port;
-        IPAddress ip;
-        byte[] buffer = new byte[512];
+        private ISession session;
         public Action<string> GUIAction;
         Thread acceptingThread;
         List<ClientHandler> clients;
@@ -28,56 +24,74 @@ namespace ProFer.Communication
 
         public Com(bool isServer, Action<string> action, ObservableCollection<Player> playerList, bool gameStarted, string ipPort)
         {
+            IConnectionFactory factory = new ConnectionFactory("tcp://"+ipPort);
+            IConnection connection = factory.CreateConnection();
+            connection.Start();
+            session = connection.CreateSession();
+
             this.GUIAction = action;
-            port = int.Parse(ipPort.Split(':')[1]);
 
             if (isServer)
             {
-                serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                serverSocket.Bind(new IPEndPoint(IPAddress.Any, port));
-                serverSocket.Listen(5);
+                IDestination dest = session.GetQueue("DicePoker.ServerQueue");
+                IMessageProducer producer = session.CreateProducer(dest);
+                IDestination clientQueue = session.GetQueue("DicePoker.ProducerClientQueue");
+                IMessageConsumer clientMessages = session.CreateConsumer(clientQueue);
+
                 Task.Factory.StartNew(StartAccepting);
+                Task.Run(NewMessageReceived);
                 this.players = playerList;
                 this.gameStarted = gameStarted;
             }
             else
             {
-                TcpClient client = new TcpClient();
                 try
                 {
-                    client.Connect(new IPEndPoint(IPAddress.Parse(ipPort.Split(':')[0]), port));
+                    IDestination dest = session.GetQueue("DicePoker.NewPlayerQueue");
+                    IMessageProducer producer = session.CreateProducer(dest);
+                    var objectMessage = producer.CreateObjectMessage("np:"+players[0].Name);
+                    producer.Send(objectMessage);
                 }
-                catch (SocketException e)
+                catch (Exception e)
                 {
                     Console.WriteLine(e);
                     throw;
                 }
-                clientSocket = client.Client;
                 Task.Factory.StartNew(Receive);
             }
         }
 
         private void Receive()
         {
-            string message = "";
-            while (!message.Contains("@quit"))
-            {
-                try
-                {
+            IDestination personalConsumerQueue = session.GetQueue("DicePoker."+players[0].Name);
+            IMessageConsumer consumer = session.CreateConsumer(personalConsumerQueue);
+            IMessage message;
 
-                    int length = clientSocket.Receive(buffer);
-                    message = Encoding.UTF8.GetString(buffer, 0, length);
-                    //inform GUI via delegate
-                    GUIAction(message);
-                    message = "";
-                }
-                catch (SocketException e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
+            while ((message = consumer.Receive(TimeSpan.FromDays(1))) != null)
+            {
+                var objectMessage = message as IObjectMessage;
+                var mapMessage = objectMessage?.Body as string;
+                GUIAction(mapMessage);
             }
-            clientSocket.Close();
+            //string message = "";
+            //while (!message.Contains("@quit"))
+            //{
+            //    try
+            //    {
+
+            //        int length = clientSocket.Receive(buffer);
+            //        message = Encoding.UTF8.GetString(buffer, 0, length);
+            //        //inform GUI via delegate
+            //        GUIAction(message);
+            //        message = "";
+            //    }
+            //    catch (SocketException e)
+            //    {
+            //        Console.WriteLine(e);
+            //        throw;
+            //    }
+            //}
+            //clientSocket.Close();
         }
 
         private void StartAccepting()
@@ -89,23 +103,49 @@ namespace ProFer.Communication
         private void Accept()
         {
             clients = new List<ClientHandler>();
-            while (acceptingThread.IsAlive && !gameStarted)
+            IDestination newPlayerQueue = session.GetQueue("DicePoker.NewPlayerQueue");
+            IMessageConsumer getNewPlayers = session.CreateConsumer(newPlayerQueue);
+            IMessage message;
+            while (acceptingThread.IsAlive && !gameStarted && (message = getNewPlayers.Receive(TimeSpan.FromDays(1))) != null)
             {
+                var objectMessage = message as IObjectMessage;
+                var mapMessage = objectMessage?.Body as string;
                 try
                 {
-                    clients.Add(new ClientHandler(serverSocket.Accept(), new Action<string, Socket>(NewMessageReceived)));
+                    this.Send("np:" + mapMessage.Split(':')[1]);
+                    clients.Add(new ClientHandler(mapMessage.Split(':')[1], session));
                     foreach (Player actPlayer in players)
                     {
                         string msg = "";
                         msg = "np:" + actPlayer.Name;
                         clients.Last().Send(msg);
                     }
+                    GUIAction("np:" + mapMessage.Split(':')[1]);
                 }
-                catch (SocketException e)
+                catch (Exception e)
                 {
                     Console.WriteLine(e);
                     throw;
                 }
+            }
+
+            //while (acceptingThread.IsAlive && !gameStarted)
+            {
+                //try
+                //{
+                //    clients.Add(new ClientHandler(serverSocket.Accept(), new Action<string, Socket>(NewMessageReceived)));
+                //    foreach (Player actPlayer in players)
+                //    {
+                //        string msg = "";
+                //        msg = "np:" + actPlayer.Name;
+                //        clients.Last().Send(msg);
+                //    }
+                //}
+                //catch (SocketException e)
+                //{
+                //    Console.WriteLine(e);
+                //    throw;
+                //}
             }
         }
 
@@ -120,21 +160,34 @@ namespace ProFer.Communication
             }
             else
             {
-                clientSocket?.Send(Encoding.UTF8.GetBytes(data));
+                IDestination dest = session.GetQueue("DicePoker.ProducerClientQueue");
+                IMessageProducer producer = session.CreateProducer(dest);
+                var objectMessage = producer.CreateObjectMessage(data);
+                producer.Send(objectMessage);
+                //clientSocket?.Send(Encoding.UTF8.GetBytes(data));
             }
         }
-        private void NewMessageReceived(string message, Socket senderSocket)
+        private void NewMessageReceived()
         {
-            GUIAction(message);
-            foreach (var item in clients)
+            IDestination dest = session.GetQueue("DicePoker.ProducerClientQueue");
+            IMessageConsumer consumer = session.CreateConsumer(dest);
+            IMessage queueMessage;
+            while ((queueMessage = consumer.Receive(TimeSpan.FromDays(1))) != null)
             {
-                if (item.Clientsocket != senderSocket )
+                var objectMessage = queueMessage as IObjectMessage;
+                var mapMessage = objectMessage?.Body as string;
+                GUIAction(mapMessage);
+
+                foreach (var item in clients)
                 {
-                    item.Send(message);
+                    if (item.Name != "senderName")
+                    {
+                        item.Send(mapMessage);
+                    }
                 }
             }
-
         }
+
         public void DisconnectSpecificClient(string name)
         {
             foreach (var item in clients)
@@ -142,7 +195,7 @@ namespace ProFer.Communication
                 if (item.Name.Equals(name))
                 {
                     item.Close();
-                    clients.Remove(item); 
+                    clients.Remove(item);
                     break;
                 }
             }
