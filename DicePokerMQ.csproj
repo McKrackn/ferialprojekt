@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Communication\ClientHandler.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="img\1.png" />
     <None Remove="img\2.png" />
     <None Remove="img\3.png" />
@@ -41,7 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Apache.NMS" Version="2.0.0" />
+    <PackageReference Include="Apache.NMS" Version="1.8.0" />
     <PackageReference Include="Apache.NMS.ActiveMQ.NetStd" Version="1.8.0" />
     <PackageReference Include="MvvmLightLibsStd10" Version="5.4.1.1" />
   </ItemGroup>

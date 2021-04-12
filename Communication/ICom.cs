@@ -2,6 +2,11 @@
 {
     public interface ICom
     {
-        public void Send(string data);
+        //send messages to server if client, or to all clients if server
+        void Send(string data);
+
+        //accept new players until the game has started
+        void Accept();
+
     }
 }

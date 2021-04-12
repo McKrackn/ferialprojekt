@@ -331,17 +331,16 @@ namespace DicePokerMQ.ViewModel
             ActAsServerBtnCommand = new RelayCommand(
                 () =>
                 {
+                    Self = new Player(Name);
+                    PlayerList.Add(Self);
+
                     com = new Com(true, GUIAction, PlayerList, GameStarted, IPPort);
                     isConnected = true;
                     isServer = true;
 
-                    Self = new Player(Name);
-                    PlayerList.Add(Self);
-
                     ActAsClientBtnCommand.RaiseCanExecuteChanged();
                     StartGameCommand.RaiseCanExecuteChanged();
                     ActAsServerBtnCommand.RaiseCanExecuteChanged();
-                    DropClientBtnCommand.RaiseCanExecuteChanged();
                     NameVisibility = "false";
 
                     Messages.Insert(0,"Welcome Player " + Name + " (Server). You can start the game whenever you wish.");
@@ -354,11 +353,11 @@ namespace DicePokerMQ.ViewModel
                 {
                     try
                     {
-                        com = new Com(false, GUIAction, null, GameStarted, IPPort);
-                        isConnected = true;
-
                         Self = new Player(Name);
                         PlayerList.Add(Self);
+
+                        com = new Com(false, GUIAction, PlayerList, GameStarted, IPPort);
+                        isConnected = true;
 
                         ActAsClientBtnCommand.RaiseCanExecuteChanged();
                         ActAsServerBtnCommand.RaiseCanExecuteChanged();
@@ -382,13 +381,6 @@ namespace DicePokerMQ.ViewModel
                     Task.Factory.StartNew(StartGame);
                 },
                 () => isServer && !GameStarted);
-
-            DropClientBtnCommand = new RelayCommand(() =>
-                {
-                    com.DisconnectSpecificClient(SelectedUser.Name);
-                    PlayerList.Remove(SelectedUser); 
-                },
-                () => { return (SelectedUser != null && SelectedUser.Name != Self.Name && isServer); });
 
             RollCommand = new RelayCommand(() =>
                 {

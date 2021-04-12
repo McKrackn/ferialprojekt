@@ -225,13 +225,6 @@
                             </Style>
                         </Button.Resources>
                     </Button>
-                    <Button Style="{StaticResource ResourceKey=RoundedButton}" Content="Kick" Command="{Binding DropClientBtnCommand}">
-                        <Button.Resources>
-                            <Style TargetType="{x:Type Border}">
-                                <Setter Property="CornerRadius" Value="10"/>
-                            </Style>
-                        </Button.Resources>
-                    </Button>
                 </StackPanel>
             </StackPanel>
             <!--#endregion-->
